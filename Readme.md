@@ -34,25 +34,25 @@ Every project in this repository is designed to recreate a production-grade syst
 
 ```
 .
-├── codeforces/
+├── CodeForces/
 │   ├── 800/
 │   ├── 900/
 │   ├── 1000/
 │   └── ...
 │
-├── projects/
-│   ├── 01-search-engine/
-│   ├── 02-redis/
-│   ├── 03-git/
-│   ├── 04-http-server/
-│   ├── ...
+├── searchengine/
 │
-├── notes/
+├── redis/
 │
-├── resources/
+├── git/
+│
+├── httpserver/
+│
+├── ...
 │
 └── README.md
 ```
+
 
 ---
 
