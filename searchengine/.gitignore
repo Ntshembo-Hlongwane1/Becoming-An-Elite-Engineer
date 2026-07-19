@@ -1,0 +1,8 @@
+# Ignore CMake build outputs and compiler artifacts
+build/
+*.exe
+*.o
+*.obj
+
+# Ignore data generate_inventory.py will check 1g corpus of ecom data in this case CheckerSixty 60 inventory like
+data/

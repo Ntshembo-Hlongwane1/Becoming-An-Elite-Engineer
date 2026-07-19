@@ -1,0 +1,5 @@
+﻿# Ignore CMake build outputs and compiler artifacts
+build/
+*.exe
+*.o
+*.obj
