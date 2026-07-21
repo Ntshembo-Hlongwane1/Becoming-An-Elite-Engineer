@@ -5,8 +5,8 @@
 #include <vector>
 #include <memory>
 
-#include "internal/kernal/core/headerfiles/subsystem.h"
-#include "internal/kernal/core/headerfiles/error.h"
+#include "internal/kernal/core/headerfiles/subsystem.hpp"
+#include "internal/kernal/core/headerfiles/error.hpp"
 
 
 class Kernal {

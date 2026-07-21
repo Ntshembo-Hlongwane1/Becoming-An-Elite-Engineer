@@ -1,4 +1,4 @@
-#include "Kernal.h"
+#include "Kernal.hpp"
 #include <iostream>
 
 Kernal::~Kernal() = default; // unique_ptr automatically cleans up

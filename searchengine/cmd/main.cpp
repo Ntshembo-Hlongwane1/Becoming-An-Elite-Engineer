@@ -1,9 +1,10 @@
 #include <iostream>
-#include "internal/kernal/kernal.h"
-#include "internal/engine/engine.h"
-#include "internal/kernal/core/headerfiles/error.h"
-#include "internal/filereader/filereader.h"
-#include "internal/store/store.h"
+#include "internal/kernal/kernal.hpp"
+#include "internal/engine/engine.hpp"
+#include "internal/kernal/core/headerfiles/error.hpp"
+#include "internal/filereader/filereader.hpp"
+#include "internal/store/store.hpp"
+#include "internal/lexer/lexer.hpp"
 
 int main() {
     std::cout << "SonarSearch Starting..." << std::endl;
@@ -22,6 +23,13 @@ int main() {
     if (!filereaderRegError.GetMessage().empty()) {
         std::cerr << "File Reader registration failed: " << filereaderRegError.GetMessage() << std::endl;
         return 1;
+    }
+
+    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>();
+    Error lexerRegError = kernal.Register("Lexer", lexer.release());
+
+    if (!lexerRegError.GetMessage().empty()){
+        std::cout << "Registration failed: " << lexerRegError.GetMessage() << std::endl;
     }
 
     Error regError = kernal.Register("Search Engine", new Engine(dynamic_cast<Store*>(kernal.

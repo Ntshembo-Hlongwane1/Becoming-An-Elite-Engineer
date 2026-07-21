@@ -1,5 +1,5 @@
 #include <string>
-#include "headerfiles/error.h"
+#include "headerfiles/error.hpp"
 #include <iostream>
 
 Error::Error(const std::string& message) : message(message) {}

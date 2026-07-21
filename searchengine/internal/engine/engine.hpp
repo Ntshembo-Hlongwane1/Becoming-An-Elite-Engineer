@@ -1,10 +1,10 @@
 #pragma once
-#include "internal/kernal/core/headerfiles/subsystem.h"
-#include "internal/kernal/core/headerfiles/error.h"
+#include "internal/kernal/core/headerfiles/subsystem.hpp"
+#include "internal/kernal/core/headerfiles/error.hpp"
 #include <string>
 #include <thread>
 #include <atomic>
-#include "internal/store/store.h"
+#include "internal/store/store.hpp"
 #include <string>
 
 class Engine : public Subsystem {
