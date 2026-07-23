@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 18px; fill: #34495e; text-anchor: middle; }
+      .label-text { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #2c3e50; }
+      .formula-text { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #000; }
+      .result-text { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; fill: #27ae60; }
+      .slot-free { fill: #ecf0f1; stroke: #7f8c8d; stroke-width: 2; stroke-dasharray: 4,2; }
+      .slot-fixed-1 { fill: #a9cce3; stroke: #2980b9; stroke-width: 2; }
+      .slot-fixed-0 { fill: #f9e79f; stroke: #f1c40f; stroke-width: 2; }
+      .slot-text { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; text-anchor: middle; dominant-baseline: central; }
+      .box-formula { fill: #ebf5fb; stroke: #2980b9; stroke-width: 3; rx: 15; ry: 15; }
+      .arrow { stroke: #e74c3c; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .highlight-box { fill: #fef9e7; stroke: #f39c12; stroke-width: 2; rx: 8; ry: 8; }
+    </style>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e74c3c" />
+    </marker>
+  </defs>
+
+  <!-- Title Section -->
+  <text x="400" y="45" class="title">Counting Binary Strings of Length 7</text>
+  <text x="400" y="75" class="subtitle">Problem: How many strings start with '1' <tspan font-weight="bold" fill="#e74c3c">OR</tspan> end with '000'?</text>
+
+  <!-- ===== ROW 1: SET A (Starts with 1) ===== -->
+  <g transform="translate(0, 110)">
+    <text x="50" y="22" class="label-text">Set A: Start with '1'</text>
+    
+    <!-- Bit 0 (Fixed 1) -->
+    <rect x="180" y="0" width="44" height="44" class="slot-fixed-1" />
+    <text x="202" y="22" class="slot-text">1</text>
+    
+    <!-- Bits 1 to 6 (Free) -->
+    <rect x="232" y="0" width="44" height="44" class="slot-free" />
+    <rect x="284" y="0" width="44" height="44" class="slot-free" />
+    <rect x="336" y="0" width="44" height="44" class="slot-free" />
+    <rect x="388" y="0" width="44" height="44" class="slot-free" />
+    <rect x="440" y="0" width="44" height="44" class="slot-free" />
+    <rect x="492" y="0" width="44" height="44" class="slot-free" />
+    
+    <!-- Free slots text -->
+    <text x="254" y="22" class="slot-text">0/1</text>
+    <text x="306" y="22" class="slot-text">0/1</text>
+    <text x="358" y="22" class="slot-text">0/1</text>
+    <text x="410" y="22" class="slot-text">0/1</text>
+    <text x="462" y="22" class="slot-text">0/1</text>
+    <text x="514" y="22" class="slot-text">0/1</text>
+
+    <!-- Braces / Count -->
+    <text x="580" y="22" class="formula-text" fill="#2980b9">
+      |A| = 2<tspan font-size="14" baseline-shift="super">6</tspan> = 64
+    </text>
+  </g>
+
+  <!-- ===== ROW 2: SET B (Ends with 000) ===== -->
+  <g transform="translate(0, 210)">
+    <text x="50" y="22" class="label-text">Set B: End with '000'</text>
+    
+    <!-- Bits 0 to 3 (Free) -->
+    <rect x="180" y="0" width="44" height="44" class="slot-free" />
+    <rect x="232" y="0" width="44" height="44" class="slot-free" />
+    <rect x="284" y="0" width="44" height="44" class="slot-free" />
+    <rect x="336" y="0" width="44" height="44" class="slot-free" />
+    
+    <text x="202" y="22" class="slot-text">0/1</text>
+    <text x="254" y="22" class="slot-text">0/1</text>
+    <text x="306" y="22" class="slot-text">0/1</text>
+    <text x="358" y="22" class="slot-text">0/1</text>
+
+    <!-- Bits 4 to 6 (Fixed 0) -->
+    <rect x="388" y="0" width="44" height="44" class="slot-fixed-0" />
+    <rect x="440" y="0" width="44" height="44" class="slot-fixed-0" />
+    <rect x="492" y="0" width="44" height="44" class="slot-fixed-0" />
+    
+    <text x="410" y="22" class="slot-text">0</text>
+    <text x="462" y="22" class="slot-text">0</text>
+    <text x="514" y="22" class="slot-text">0</text>
+
+    <!-- Braces / Count -->
+    <text x="580" y="22" class="formula-text" fill="#f39c12">
+      |B| = 2<tspan font-size="14" baseline-shift="super">4</tspan> = 16
+    </text>
+  </g>
+
+  <!-- ===== ROW 3: INTERSECTION (Starts with 1 AND Ends with 000) ===== -->
+  <g transform="translate(0, 310)">
+    <text x="50" y="22" class="label-text">Set A ∩ B: Start '1' <tspan font-weight="bold" fill="#e74c3c">AND</tspan> End '000'</text>
+    
+    <!-- Bit 0 (Fixed 1) -->
+    <rect x="180" y="0" width="44" height="44" class="slot-fixed-1" />
+    <text x="202" y="22" class="slot-text">1</text>
+    
+    <!-- Bits 1 to 3 (Free) -->
+    <rect x="232" y="0" width="44" height="44" class="slot-free" />
+    <rect x="284" y="0" width="44" height="44" class="slot-free" />
+    <rect x="336" y="0" width="44" height="44" class="slot-free" />
+    
+    <text x="254" y="22" class="slot-text">0/1</text>
+    <text x="306" y="22" class="slot-text">0/1</text>
+    <text x="358" y="22" class="slot-text">0/1</text>
+
+    <!-- Bits 4 to 6 (Fixed 0) -->
+    <rect x="388" y="0" width="44" height="44" class="slot-fixed-0" />
+    <rect x="440" y="0" width="44" height="44" class="slot-fixed-0" />
+    <rect x="492" y="0" width="44" height="44" class="slot-fixed-0" />
+    
+    <text x="410" y="22" class="slot-text">0</text>
+    <text x="462" y="22" class="slot-text">0</text>
+    <text x="514" y="22" class="slot-text">0</text>
+
+    <!-- Braces / Count -->
+    <text x="580" y="22" class="formula-text" fill="#8e44ad">
+      |A∩B| = 2<tspan font-size="14" baseline-shift="super">3</tspan> = 8
+    </text>
+  </g>
+
+  <!-- ===== ROW 4: FORMULA & FINAL ANSWER ===== -->
+  <g transform="translate(0, 410)">
+    <!-- Formula Box -->
+    <rect x="100" y="0" width="600" height="100" class="box-formula" />
+    
+    <text x="400" y="35" class="formula-text" text-anchor="middle">
+      |A ∪ B| = |A| + |B| − |A ∩ B|
+    </text>
+    
+    <text x="400" y="65" class="formula-text" text-anchor="middle" fill="#2980b9">
+      = 64 + 16 − 8
+    </text>
+
+    <!-- Final Result Arrow -->
+    <path d="M 720 50 L 760 50" class="arrow" />
+    
+    <!-- Final Answer Box -->
+    <rect x="770" y="30" width="10" height="40" fill="#27ae60" rx="5" />
+    <text x="820" y="50" class="result-text" text-anchor="middle">
+      = 72
+    </text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(20, 530)">
+    <rect x="0" y="0" width="14" height="14" class="slot-fixed-1" />
+    <text x="20" y="12" class="label-text" font-size="14">Fixed '1'</text>
+    
+    <rect x="130" y="0" width="14" height="14" class="slot-fixed-0" />
+    <text x="150" y="12" class="label-text" font-size="14">Fixed '0'</text>
+
+    <rect x="260" y="0" width="14" height="14" class="slot-free" />
+    <text x="280" y="12" class="label-text" font-size="14">Free (0 or 1)</text>
+  </g>
+</svg>

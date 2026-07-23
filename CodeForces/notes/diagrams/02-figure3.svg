@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" width="100%" height="100%">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #7f8c8d; text-anchor: middle; }
+      .table-circle { fill: none; stroke: #bdc3c7; stroke-width: 3; stroke-dasharray: 8,4; }
+      .seat-dot { fill: #fff; stroke: #34495e; stroke-width: 2; }
+      .label-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .person-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+      .person-circle { stroke: #2c3e50; stroke-width: 2; }
+      .arrow { stroke: #e74c3c; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .arrow-label { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #e74c3c; text-anchor: middle; }
+      .formula-box { fill: #ebf5fb; stroke: #2980b9; stroke-width: 3; rx: 12; ry: 12; }
+      .formula-text { font-family: Arial, sans-serif; font-size: 20px; fill: #2c3e50; text-anchor: middle; font-weight: bold; }
+      .result-text { font-family: Arial, sans-serif; font-size: 26px; fill: #27ae60; text-anchor: middle; font-weight: bold; }
+      .note-box { fill: #fef9e7; stroke: #f39c12; stroke-width: 2; rx: 8; ry: 8; }
+      .note-text { font-family: Arial, sans-serif; font-size: 15px; fill: #7f8c8d; text-anchor: middle; }
+    </style>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e74c3c" />
+    </marker>
+  </defs>
+
+  <!-- Title Section -->
+  <text x="500" y="40" class="title">Circular Permutations: Seating 6 People Around a Table</text>
+  <text x="500" y="68" class="subtitle">Rotating everyone by one seat does <tspan font-weight="bold" fill="#e74c3c">not</tspan> create a new arrangement</text>
+
+  <!-- ===== LEFT TABLE (Original) ===== -->
+  <g transform="translate(0, 0)">
+    <!-- Table -->
+    <circle cx="250" cy="250" r="155" class="table-circle" />
+    <!-- Center label -->
+    <text x="250" y="250" class="label-text" fill="#bdc3c7" font-size="18">Table</text>
+
+    <!-- People (Colors) -->
+    <!-- P1: Red -->
+    <circle cx="250" cy="95" r="28" class="person-circle" fill="#e74c3c" />
+    <text x="250" y="95" class="person-text">P1</text>
+    
+    <!-- P2: Blue -->
+    <circle cx="371" cy="165" r="28" class="person-circle" fill="#2980b9" />
+    <text x="371" y="165" class="person-text">P2</text>
+
+    <!-- P3: Green -->
+    <circle cx="371" cy="335" r="28" class="person-circle" fill="#27ae60" />
+    <text x="371" y="335" class="person-text">P3</text>
+
+    <!-- P4: Orange -->
+    <circle cx="250" cy="405" r="28" class="person-circle" fill="#f39c12" />
+    <text x="250" y="405" class="person-text">P4</text>
+
+    <!-- P5: Purple -->
+    <circle cx="129" cy="335" r="28" class="person-circle" fill="#8e44ad" />
+    <text x="129" y="335" class="person-text">P5</text>
+
+    <!-- P6: Pink -->
+    <circle cx="129" cy="165" r="28" class="person-circle" fill="#e91e63" />
+    <text x="129" y="165" class="person-text">P6</text>
+
+    <!-- Label -->
+    <text x="250" y="470" class="label-text" font-size="18" fill="#2c3e50">Arrangement A (Original)</text>
+  </g>
+
+  <!-- ===== ARROW (Rotate) ===== -->
+  <g>
+    <path d="M 450 250 L 520 250" class="arrow" />
+    <text x="485" y="230" class="arrow-label">Rotate</text>
+    <text x="485" y="270" class="arrow-label" font-size="13">by 1 seat</text>
+  </g>
+
+  <!-- ===== RIGHT TABLE (Rotated) ===== -->
+  <g transform="translate(0, 0)">
+    <!-- Table -->
+    <circle cx="750" cy="250" r="155" class="table-circle" />
+    <text x="750" y="250" class="label-text" fill="#bdc3c7" font-size="18">Table</text>
+
+    <!-- P1 moved to 2 o'clock -->
+    <circle cx="871" cy="165" r="28" class="person-circle" fill="#e74c3c" />
+    <text x="871" y="165" class="person-text">P1</text>
+    
+    <!-- P2 moved to 4 o'clock -->
+    <circle cx="871" cy="335" r="28" class="person-circle" fill="#2980b9" />
+    <text x="871" y="335" class="person-text">P2</text>
+
+    <!-- P3 moved to 6 o'clock -->
+    <circle cx="750" cy="405" r="28" class="person-circle" fill="#27ae60" />
+    <text x="750" y="405" class="person-text">P3</text>
+
+    <!-- P4 moved to 8 o'clock -->
+    <circle cx="629" cy="335" r="28" class="person-circle" fill="#f39c12" />
+    <text x="629" y="335" class="person-text">P4</text>
+
+    <!-- P5 moved to 10 o'clock -->
+    <circle cx="629" cy="165" r="28" class="person-circle" fill="#8e44ad" />
+    <text x="629" y="165" class="person-text">P5</text>
+
+    <!-- P6 moved to 12 o'clock -->
+    <circle cx="750" cy="95" r="28" class="person-circle" fill="#e91e63" />
+    <text x="750" y="95" class="person-text">P6</text>
+
+    <!-- Label -->
+    <text x="750" y="470" class="label-text" font-size="18" fill="#2c3e50">Arrangement B (Rotated)</text>
+  </g>
+
+  <!-- ===== BOTTOM: FORMULA & EXPLANATION ===== -->
+  <g transform="translate(0, 500)">
+    <!-- Note Box -->
+    <rect x="50" y="0" width="900" height="150" class="formula-box" />
+    
+    <!-- Highlight: Neighbors remain the same -->
+    <rect x="380" y="-10" width="240" height="30" class="note-box" />
+    <text x="500" y="10" class="note-text" font-weight="bold" fill="#f39c12">Key Insight: Everyone keeps the same neighbors</text>
+
+    <!-- Step 1: Linear -->
+    <text x="200" y="55" class="formula-text" font-size="18">
+      1. Count linear arrangements
+    </text>
+    <text x="200" y="85" class="formula-text" fill="#2980b9">
+      6! = 720
+    </text>
+
+    <!-- Step 2: Division -->
+    <text x="500" y="55" class="formula-text" font-size="18">
+      2. Divide by 6 rotations
+    </text>
+    <text x="500" y="85" class="formula-text" fill="#e74c3c">
+      ÷ 6
+    </text>
+
+    <!-- Step 3: Result -->
+    <text x="800" y="55" class="formula-text" font-size="18">
+      3. Circular arrangements
+    </text>
+    <text x="800" y="85" class="formula-text result-text">
+      6! / 6 = 5! = 120
+    </text>
+
+    <!-- Bottom final formula -->
+    <text x="500" y="130" class="formula-text" font-size="22" fill="#2c3e50">
+      General Formula: (n − 1)! = 5! = 120
+    </text>
+  </g>
+</svg>
