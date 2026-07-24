@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <string_view>
+
 
 enum class TokKind : int {
     TokField,
@@ -16,11 +18,6 @@ enum class TokKind : int {
 };
 
 struct Token {
-  TokKind kind;
-    union {
-        unsigned int asciiChar;
-        int intVal;
-        double floatVal;
-        char* strPtr;
-    } data;
+    TokKind kind;
+    std::string_view value;
 };

@@ -1,6 +1,6 @@
-#include "internal/engine/engine.h"
+#include "internal/engine/engine.hpp"
 #include <iostream>
-#include "internal/store/store.h"
+#include "internal/store/store.hpp"
 #include <string>
 #include <algorithm>
 
@@ -93,10 +93,16 @@ std::string Engine::getLeftPart(std::string text){
     return text.substr(0, pos);
 }
 
+void Engine::V3(std::string& prompt) {
+    std::cout << "\nSonar Search V3" << std::endl;
+
+    std::cin.get();
+};
+
 void Engine::Run() {
     std::string result = Prompt();
     
-    V2(result);
+    V3(result);
 
     // So I can do something with the prompt value here withou having had made another copy in memory of prompt
 }

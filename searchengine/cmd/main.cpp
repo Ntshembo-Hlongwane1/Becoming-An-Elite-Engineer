@@ -2,9 +2,11 @@
 #include "internal/kernal/kernal.hpp"
 #include "internal/engine/engine.hpp"
 #include "internal/kernal/core/headerfiles/error.hpp"
-#include "internal/filereader/filereader.hpp"
+#include "internal/directoryreader/directoryreader.hpp"
 #include "internal/store/store.hpp"
 #include "internal/lexer/lexer.hpp"
+#include "internal/kernal/core/datastructures/ringbuffer.hpp"
+#include <thread>
 
 int main() {
     std::cout << "SonarSearch Starting..." << std::endl;
@@ -16,21 +18,26 @@ int main() {
     if (!storeRegError.GetMessage().empty()) {
         std::cerr << "Store registration failed: " << storeRegError.GetMessage() << std::endl;
         return 1;
-    }
+    };
 
-    Error filereaderRegError = kernal.Register("File Reader", new FileReader(dynamic_cast<Store*>(kernal.GetSubsystem("Store"))));
+    RingBuffer<std::string, 1024> dirQueue;
 
-    if (!filereaderRegError.GetMessage().empty()) {
-        std::cerr << "File Reader registration failed: " << filereaderRegError.GetMessage() << std::endl;
-        return 1;
-    }
-
-    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>();
+    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>(dirQueue);
     Error lexerRegError = kernal.Register("Lexer", lexer.release());
 
     if (!lexerRegError.GetMessage().empty()){
         std::cout << "Registration failed: " << lexerRegError.GetMessage() << std::endl;
     }
+
+
+    Error dirReaderRegError = kernal.Register("Dir Reader", new DirectoryReader(dirQueue));
+
+    if (!dirReaderRegError.GetMessage().empty()) {
+        std::cerr << "Dir Reader registration failed: " << dirReaderRegError.GetMessage() << std::endl;
+        return 1;
+    }
+
+  
 
     Error regError = kernal.Register("Search Engine", new Engine(dynamic_cast<Store*>(kernal.
   GetSubsystem("Store"))));
@@ -54,9 +61,25 @@ int main() {
     }
 
     Engine* engine = dynamic_cast<Engine*>(kernal.GetSubsystem("Search Engine"));
+    DirectoryReader* dirReader = dynamic_cast<DirectoryReader*>(kernal.GetSubsystem("Dir Reader"));
+    Lexer* lx = dynamic_cast<Lexer*>(kernal.GetSubsystem("Lexer"));
+
+
     
     if (engine) {
-        engine->Run();   // entry point
+        std::thread lexer_thread(&Lexer::Run, lx);
+        std::thread dir_reader_thread(&DirectoryReader::Run, dirReader);
+
+        // engine->Run();   // entry point
+
+        if (lexer_thread.joinable()) {
+            lexer_thread.join();  // Wait for Lexer to finish
+        }
+        
+        if (dir_reader_thread.joinable()) {
+            dir_reader_thread.join();  // Wait for DirReader to finish
+        }
+        
     } else {
         std::cerr << "Engine not found!" << std::endl;
         return 1;

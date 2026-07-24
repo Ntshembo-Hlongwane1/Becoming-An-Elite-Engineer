@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "internal/kernal/core/headerfiles/error.h"
+#include "internal/kernal/core/headerfiles/error.hpp"
 
 class Subsystem {
     public:

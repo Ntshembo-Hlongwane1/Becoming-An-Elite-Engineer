@@ -23,6 +23,8 @@ class Engine : public Subsystem {
         std::string Prompt();
         void V1(std::string& prompt);
         void V2(std::string& prompt);
+        void V3(std::string& prompt);
+
         Store* store_;
         bool eualsIgnoreCase(const std::string& a, const std::string& b);
         std::string getLeftPart(std::string text);

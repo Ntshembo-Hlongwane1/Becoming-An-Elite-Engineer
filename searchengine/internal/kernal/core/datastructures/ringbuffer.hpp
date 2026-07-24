@@ -5,9 +5,9 @@
 template<typename T, size_t SIZE>
 class RingBuffer{
     private:
-        static_assert((SIZE & (SIZE - 1)), "SIZE must be power of 2");
-        alignas(64) std::atomic<size_t> write_index(0);
-        alignas(64) std::atomic<size_t> read_index(0);
+        static_assert((SIZE & (SIZE - 1)) == 0, "SIZE must be power of 2");
+        alignas(64) std::atomic<size_t> write_index{0};
+        alignas(64) std::atomic<size_t> read_index{0};
         alignas(64) T slots[SIZE];
 
 
