@@ -4,6 +4,10 @@
 #include <string_view>
 #include "ilp.hpp"
 #include <thread>
+#include "internal/kernal/core/utils/stopwords.hpp"
+#include <unordered_set>
+#include <algorithm>
+#include <cctype>
 
 
 
@@ -34,6 +38,21 @@ Error Lexer::Stop(){
     return Error("");
 };
 
+
+std::vector<std::string> Lexer::splitLine(std::string& line) {
+    std::vector<std::string> result;
+    std::size_t start = 0;
+    std::size_t end = line.find(' ');
+
+    while (end != std::string::npos) {
+        result.push_back(line.substr(start, end - start));
+        start = end + 1;
+        end = line.find(' ', start);
+    }
+    result.push_back(line.substr(start));  // last token
+    return result;
+}
+
 void Lexer::worker(std::string thread){
     std::cout << "WORKER STARTING: " << thread <<  std::endl;
 
@@ -59,9 +78,22 @@ void Lexer::worker(std::string thread){
             break;
         }
 
-        // Process the line
-        std::cout << "Thread: " << thread << " " 
-                  << line.filepath << " : " << line.line << std::endl;
+        auto tokens = splitLine(line.line);
+        for (auto& token : tokens) {
+            token.erase(
+                std::remove_if(token.begin(), token.end(),
+                    [](unsigned char c) {
+                        return std::isspace(c) || std::ispunct(c);
+                    }
+                ),
+                token.end()
+            );
+
+            if (StopWords::isStopWord(token) && !token.empty()){
+                parserQueue.push(token);
+            }
+        }
+        
     }
 
 }

@@ -1,7 +1,9 @@
 #include <iostream>
 #include "internal/kernal/kernal.hpp"
 #include "internal/engine/engine.hpp"
+#include "internal/parser/parser.hpp"
 #include "internal/kernal/core/headerfiles/error.hpp"
+#include "internal/kernal/core/headerfiles/token.hpp"
 #include "internal/directoryreader/directoryreader.hpp"
 #include "internal/store/store.hpp"
 #include "internal/lexer/lexer.hpp"
@@ -22,8 +24,9 @@ int main() {
 
     RingBuffer<std::string, 1024> dirQueue;
     RingBuffer<ILP, 1024> lineQueue;
+    RingBuffer<std::string, 1024> parserQueue;
 
-    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>(dirQueue, lineQueue);
+    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>(dirQueue, lineQueue, parserQueue);
     Error lexerRegError = kernal.Register("Lexer", lexer.release());
 
     if (!lexerRegError.GetMessage().empty()){
@@ -39,6 +42,13 @@ int main() {
     }
 
   
+    Error parserRegError = kernal.Register("Parser", new Parser(parserQueue));
+
+    if (!parserRegError.GetMessage().empty()) {
+        std::cerr << "Parser registration failed: " << dirReaderRegError.GetMessage() << std::endl;
+        return 1;
+    }
+
 
     Error regError = kernal.Register("Search Engine", new Engine(dynamic_cast<Store*>(kernal.
   GetSubsystem("Store"))));
@@ -64,12 +74,14 @@ int main() {
     Engine* engine = dynamic_cast<Engine*>(kernal.GetSubsystem("Search Engine"));
     DirectoryReader* dirReader = dynamic_cast<DirectoryReader*>(kernal.GetSubsystem("Dir Reader"));
     Lexer* lx = dynamic_cast<Lexer*>(kernal.GetSubsystem("Lexer"));
+    Parser* parser = dynamic_cast<Parser*>(kernal.GetSubsystem("Parser"));
 
 
     
     if (engine) {
         std::thread lexer_thread(&Lexer::Run, lx);
         std::thread dir_reader_thread(&DirectoryReader::Run, dirReader);
+        std::thread parser_thread(&Parser::Run, parser);
 
         // engine->Run();   // entry point
 
@@ -81,6 +93,10 @@ int main() {
             dir_reader_thread.join();  // Wait for DirReader to finish
         }
         
+        if (parser_thread.joinable()){
+            parser_thread.join();
+        }
+
     } else {
         std::cerr << "Engine not found!" << std::endl;
         return 1;

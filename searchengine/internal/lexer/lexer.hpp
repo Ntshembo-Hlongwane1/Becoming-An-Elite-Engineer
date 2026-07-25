@@ -9,13 +9,19 @@
 #include "ilp.hpp"
 #include <thread>
 #include <condition_variable>
+#include <vector>
+#include <string_view>
+#include <unordered_set>
 
 class Lexer : public Subsystem {
 
     public:
         
-        Lexer(RingBuffer<std::string, 1024>& dirQueue, RingBuffer<ILP, 1024>& lineQueue) 
-            : dirQueue(dirQueue), lineQueue(lineQueue){}
+        Lexer(
+            RingBuffer<std::string, 1024>& dirQueue,
+            RingBuffer<ILP, 1024>& lineQueue, 
+            RingBuffer<std::string, 1024>& parserQueue) 
+                : dirQueue(dirQueue), lineQueue(lineQueue), parserQueue(parserQueue){}
 
         std::string Name() override;
         Error Init() override;
@@ -31,10 +37,13 @@ class Lexer : public Subsystem {
         std::string filepath;
         RingBuffer<std::string, 1024>& dirQueue;
         RingBuffer<ILP, 1024>& lineQueue;
+        RingBuffer<std::string, 1024>& parserQueue;
         void worker(std::string thread);
         std::thread worker1;
         std::thread worker2;
         mutable std::mutex lineQueueMutex;
         std::condition_variable queueCV;
         std::atomic<bool> running{true};
+        bool isStopWord(std::string& word, std::unordered_set<std::string>& stopWord);
+        std::vector<std::string> splitLine(std::string& line);
 };
