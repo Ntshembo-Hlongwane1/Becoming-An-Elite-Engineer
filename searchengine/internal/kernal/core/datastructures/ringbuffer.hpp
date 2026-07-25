@@ -40,5 +40,9 @@ class RingBuffer{
         };
 
         
-
+        bool empty() const {
+            size_t read = read_index.load(std::memory_order_acquire);
+            size_t write = write_index.load(std::memory_order_acquire);
+            return read >= write;
+        }
 };

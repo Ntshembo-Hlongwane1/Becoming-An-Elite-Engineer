@@ -21,8 +21,9 @@ int main() {
     };
 
     RingBuffer<std::string, 1024> dirQueue;
+    RingBuffer<ILP, 1024> lineQueue;
 
-    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>(dirQueue);
+    std::unique_ptr<Lexer> lexer = std::make_unique<Lexer>(dirQueue, lineQueue);
     Error lexerRegError = kernal.Register("Lexer", lexer.release());
 
     if (!lexerRegError.GetMessage().empty()){

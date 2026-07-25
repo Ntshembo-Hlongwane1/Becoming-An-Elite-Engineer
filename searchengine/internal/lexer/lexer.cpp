@@ -18,10 +18,12 @@ Error Lexer::Init(){
 
 Error Lexer::Start(){
     std::cout << "\n [" << Name() << "] Starting..." << std::endl;
-
-    std::thread worker1;
-    std::thread worker2;
-
+    try{
+        worker1 = std::thread(&Lexer::worker, this, "1"); 
+        worker2 = std::thread(&Lexer::worker, this, "2"); 
+    }catch(const std::system_error& e){
+        return Error("Thread creation failed" + std::string(e.what()));
+    }    
     return Error("");
 };
 
@@ -31,6 +33,38 @@ Error Lexer::Stop(){
    
     return Error("");
 };
+
+void Lexer::worker(std::string thread){
+    std::cout << "WORKER STARTING: " << thread <<  std::endl;
+
+    while(running.load(std::memory_order_acquire)){
+        ILP line;
+
+       { 
+            std::unique_lock<std::mutex> lock(lineQueueMutex);
+
+            queueCV.wait(lock, [this] { return !lineQueue.empty(); });
+
+            if (!running.load(std::memory_order_acquire) && lineQueue.empty()) {
+                break;
+            }
+
+            if (!lineQueue.pop(line)){
+                continue;
+            }
+        }
+
+       if (line.filepath.empty() && line.line.empty()) {
+            std::cout << "Thread " << thread << " exiting." << std::endl;
+            break;
+        }
+
+        // Process the line
+        std::cout << "Thread: " << thread << " " 
+                  << line.filepath << " : " << line.line << std::endl;
+    }
+
+}
 
 void Lexer::Run(){
     std::cout << "[" << Name() << "] Run starting..." << std::endl;
@@ -60,20 +94,29 @@ void Lexer::Run(){
 
             char line[456];
 
-            while(fgets(line, sizeof(line), fp) != NULL){
+            while(fgets(line, sizeof(line), fp) != nullptr){
                 size_t len = strlen(line);
 
                 if (len > 0 && line[len - 1] == '\n'){
                     line[len - 1] = '\0';
                 }
 
-                std::cout << line << std::endl;
+                // std::cout << "Pushing line" << std::endl;
+                std::lock_guard<std::mutex> lock(lineQueueMutex);
+                lineQueue.push({ file, std::string(line) }); 
+
+                queueCV.notify_one();
             }
 
-            std::cout << "\n [" << Name() << "] Received: " << file << std::endl;
+            if (ferror(fp)) {
+                std::cerr << "[" << Name() << "] Read error on file: " << file << std::endl;
+            }
+
+            fclose(fp);
             
         }
     }
+    //running.store(false, std::memory_order_release);
 
 };
 
