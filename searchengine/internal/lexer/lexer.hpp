@@ -41,8 +41,6 @@ class Lexer : public Subsystem {
         void worker(std::string thread);
         std::thread worker1;
         std::thread worker2;
-        mutable std::mutex lineQueueMutex;
-        std::condition_variable queueCV;
         std::atomic<bool> running{true};
         bool isStopWord(std::string& word, std::unordered_set<std::string>& stopWord);
         std::vector<std::string> splitLine(std::string& line);

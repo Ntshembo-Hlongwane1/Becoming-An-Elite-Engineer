@@ -30,9 +30,12 @@ void DirectoryReader::Run() {
 
     for (const auto& entry : std::filesystem::directory_iterator(dataPath)){
         if (entry.is_regular_file()){
-            dirQueue.push(entry.path().string());
+            dirQueue.push_blocking(entry.path().string());
         }
     }
+
+    // Send poison pill so Lexer::Run() knows all files have been enqueued
+    dirQueue.push_blocking(std::string(""));
     
     std::cout << "\n [" << Name() << "] Data files added to store." << std::endl;
 

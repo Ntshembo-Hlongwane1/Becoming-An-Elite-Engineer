@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <algorithm>
 #include <cctype>
+#include "internal/kernal/core/headerfiles/sharedmutexs.hpp"
 
-
-
+ 
 std::string Lexer::Name() {
     return "Lexer";
 };
@@ -26,6 +26,7 @@ Error Lexer::Start(){
         worker1 = std::thread(&Lexer::worker, this, "1"); 
         worker2 = std::thread(&Lexer::worker, this, "2"); 
     }catch(const std::system_error& e){
+        std::cout << "Thread creation failed: " << std::string(e.what()) << std::endl;
         return Error("Thread creation failed" + std::string(e.what()));
     }    
     return Error("");
@@ -59,19 +60,7 @@ void Lexer::worker(std::string thread){
     while(running.load(std::memory_order_acquire)){
         ILP line;
 
-       { 
-            std::unique_lock<std::mutex> lock(lineQueueMutex);
-
-            queueCV.wait(lock, [this] { return !lineQueue.empty(); });
-
-            if (!running.load(std::memory_order_acquire) && lineQueue.empty()) {
-                break;
-            }
-
-            if (!lineQueue.pop(line)){
-                continue;
-            }
-        }
+        lineQueue.pop_blocking(line);
 
        if (line.filepath.empty() && line.line.empty()) {
             std::cout << "Thread " << thread << " exiting." << std::endl;
@@ -90,7 +79,8 @@ void Lexer::worker(std::string thread){
             );
 
             if (StopWords::isStopWord(token) && !token.empty()){
-                parserQueue.push(token);
+                parserQueue.push_blocking(token);
+                std::cout << "Token pushed: " << std::endl;
             }
         }
         
@@ -106,48 +96,43 @@ void Lexer::Run(){
     while (true){
         std::string file;
 
-        if (dirQueue.pop(file)){
-            if (file == ""){
-                std::cout << "\n [" << Name() << "] POISON PILL. Exiting" << std::endl;
-                break;
-            }
+        dirQueue.pop_blocking(file);
 
-            dataFilesReceived++;
-
-            if (file.empty()){
-                break;
-            }
-
-            FILE* fp = fopen(file.c_str(), "r");
-
-            if (!fp){
-                std::cout << "\n [" << Name() << "] Failed to open data file" << std::endl;
-            }
-
-            char line[456];
-
-            while(fgets(line, sizeof(line), fp) != nullptr){
-                size_t len = strlen(line);
-
-                if (len > 0 && line[len - 1] == '\n'){
-                    line[len - 1] = '\0';
-                }
-
-                // std::cout << "Pushing line" << std::endl;
-                std::lock_guard<std::mutex> lock(lineQueueMutex);
-                lineQueue.push({ file, std::string(line) }); 
-
-                queueCV.notify_one();
-            }
-
-            if (ferror(fp)) {
-                std::cerr << "[" << Name() << "] Read error on file: " << file << std::endl;
-            }
-
-            fclose(fp);
-            
+        if (file.empty()){
+            std::cout << "\n [" << Name() << "] POISON PILL. Exiting" << std::endl;
+            break;
         }
+
+        dataFilesReceived++;
+
+        FILE* fp = fopen(file.c_str(), "r");
+
+        if (!fp){
+            std::cout << "\n [" << Name() << "] Failed to open data file" << std::endl;
+            continue;
+        }
+
+        char line[456];
+
+        while(fgets(line, sizeof(line), fp) != nullptr){
+            size_t len = strlen(line);
+
+            if (len > 0 && line[len - 1] == '\n'){
+                line[len - 1] = '\0';
+            }
+
+            lineQueue.push_blocking({ file, std::string(line) }); 
+
+        }
+
+        if (ferror(fp)) {
+            std::cerr << "[" << Name() << "] Read error on file: " << file << std::endl;
+        }
+
+        fclose(fp);
     }
+
+    std::cout << "Data Files: " << dataFilesReceived << std::endl;
     //running.store(false, std::memory_order_release);
 
 };
