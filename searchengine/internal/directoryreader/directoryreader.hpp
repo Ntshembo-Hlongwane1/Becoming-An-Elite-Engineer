@@ -1,20 +1,25 @@
+// internal/directoryreader/directoryreader.hpp
 #pragma once
 #include "internal/kernal/core/headerfiles/subsystem.hpp"
-#include "internal/store/store.hpp"
 #include "internal/kernal/core/datastructures/ringbuffer.hpp"
 #include <string>
+#include <thread>
 
-class DirectoryReader : public Subsystem{
-    public:
-        DirectoryReader(RingBuffer<std::string, 1024>& dirQueue) : dirQueue(dirQueue){};
-        std::string Name() override;
-        Error Init() override;
-        Error Start() override;
-        Error Stop() override;
-        void Run();   
+class DirectoryReader : public Subsystem {
+public:
+    DirectoryReader(RingBuffer<std::string, 1024>& dirQueue) 
+        : dirQueue_(dirQueue) {}
+    
+    std::string Name() override;
 
+protected:
+    Error OnInit() override;
+    Error OnStart() override;
+    Error OnStop() override;
 
-    private:
-        RingBuffer<std::string, 1024>& dirQueue;
-        std::string getRightPart(std::string str);
+private:
+    RingBuffer<std::string, 1024>& dirQueue_;  
+    std::thread run_thread_;
+    
+    void Run(); 
 };

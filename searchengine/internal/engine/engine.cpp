@@ -1,112 +1,72 @@
-#include "internal/engine/engine.hpp"
+// internal/engine/engine.cpp
+#include "engine.hpp"
 #include <iostream>
-#include "internal/store/store.hpp"
-#include <string>
 #include <algorithm>
 
-Engine::Engine(Store* store) : store_(store) {}
+std::string Engine::Name() { return "Search Engine"; }
 
-std::string Engine::Name() {
-    return "Search Engine";
-}
-
-Error Engine::Init() {
-    std::cout << "\n [" << Name() << "] Initializing..." << std::endl;
+Error Engine::OnInit() {
+    if (!store_) {
+        return Error("Store pointer is null");
+    }
     return Error("");
 }
 
-Error Engine::Start() {
-    std::cout << "\n [" << Name() << "] Starting..." << std::endl;
+Error Engine::OnStart() {
+    running_.store(true, std::memory_order_release);
+    run_thread_ = std::thread(&Engine::Run, this);
     return Error("");
 }
 
-Error Engine::Stop() {
-    std::cout << "\n [" << Name() << "] Stopping..." << std::endl;
+Error Engine::OnStop() {
+    running_.store(false, std::memory_order_release);
+
+    
+    if (run_thread_.joinable()) {
+        run_thread_.join();
+    }
+    
     return Error("");
+}
+
+void Engine::Run() {
+    std::cout << "\n [" << Name() << "] Ready for queries" << std::endl;
+    
+    while (running_.load(std::memory_order_acquire)) {
+        std::string query = Prompt();
+        
+        if (query.empty() || !running_.load()) {
+            break;
+        }
+        
+        Search(query);
+    }
+    
+    std::cout << "\n [" << Name() << "] Query loop exited" << std::endl;
 }
 
 std::string Engine::Prompt() {
     std::string prompt;
     std::cout << "\n [" << Name() << "] Search: ";
     std::getline(std::cin, prompt);
-    std::cout << "\n [" << Name() << "] Searching: " << prompt << std::endl;
-
     return prompt;
-};
-
-
-void Engine::V1(std::string& prompt){
-    for (std::string& str : store_->GetDataFiles()){
-        if (eualsIgnoreCase(getLeftPart(str), prompt)){
-            std::cout << "Search results: " << str << std::endl;
-            break;
-        }
-    }
 }
 
-void Engine::V2(std::string& prompt) {
-    std::transform(prompt.begin(), prompt.end(), prompt.begin(),
-    [](unsigned char c) {
-        return std::tolower(c);
-    });
+void Engine::Search(std::string& query) {
+    std::transform(query.begin(), query.end(), query.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    
     const auto& index = store_->GetSearchIndex();
-    auto it = index.find(prompt);
-
+    auto it = index.find(query);
+    
     std::cout << "\n Search Results: " << std::endl;
-
+    
     if (it == index.end()) {
-        std::cout << "No results found." << std::endl;
+        std::cout << " No results found." << std::endl;
         return;
     }
-
-    for (const auto& doc : it->second){
-        std::cout << doc << std::endl;
-    };
-}
-
-bool Engine::eualsIgnoreCase(const std::string& a, const std::string& b){
-
-    if (a.length() != b.length()){
-        return false;
-    };
-
-
-    for (size_t i = 0; i < a.length(); i++){
-        char lowerA = std::tolower(static_cast<unsigned char>(a[i]));
-        char lowerB = std::tolower(static_cast<unsigned char>(b[i]));
-
-        if (lowerA != lowerB){
-            return false;
-        }
-    }
-
-    return true;
-};
-
-std::string Engine::getLeftPart(std::string text){
-    size_t pos = text.find('.');
-
-    if (pos == std::string::npos){
-        return text;
-    };
-
-    return text.substr(0, pos);
-}
-
-void Engine::V3(std::string& prompt) {
-    std::cout << "\nSonar Search V3" << std::endl;
-
-    std::cin.get();
-};
-
-void Engine::Run() {
-    std::string result = Prompt();
     
-    V3(result);
-
-    // So I can do something with the prompt value here withou having had made another copy in memory of prompt
+    for (const auto& doc : it->second) {
+        std::cout << " " << doc << std::endl;
+    }
 }
-
-
-
-

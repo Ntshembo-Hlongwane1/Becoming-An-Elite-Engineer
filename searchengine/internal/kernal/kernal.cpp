@@ -1,7 +1,17 @@
-#include "Kernal.hpp"
+#include "kernal.hpp"
 #include <iostream>
-
-Kernal::~Kernal() = default; // unique_ptr automatically cleans up
+ 
+Kernal::~Kernal(){
+    for (auto it = order_.rbegin(); it != order_.rend(); ++it) {
+        Subsystem* sub = subsystems_[*it].get();
+        if (sub->GetState() == Subsystem::State::STARTED) {
+            std::cerr << "\n [" << GetName() << "] WARNING: " << *it 
+                      << " was not stopped before Kernal destruction. "
+                      << "Stopping now." << std::endl;
+            sub->Stop();
+        }
+    }
+}; 
 
 std::string Kernal::GetName() const {
     return "Kernal";
@@ -47,20 +57,28 @@ Error Kernal::InitAll() {
 Error Kernal::StartAll() {
     std::cout << "\n [" << GetName() << "] Starting all subsystems..." << std::endl;
 
+    std::vector<std::string> started;
+
     for (const auto& name : order_) {
-        Subsystem* subsystem = subsystems_[name].get();
-        Error error = subsystem->Start();
+        Error error = subsystems_[name]->Start();
 
         if (HasError(error)) {
-            std::cout << "\n [" << GetName() << "] [" << name << "] Start failed: "
-                      << error.GetMessage() << std::endl;
-            return Error("[" + name + "] Start failed: " + error.GetMessage());
+            std::cerr << "\n [" << GetName() << "] [" << name 
+                      << "] Start failed, rolling back..." << std::endl;
+            
+            // ROLLBACK: Stop everything we already started, in reverse
+            for (auto it = started.rbegin(); it != started.rend(); ++it) {
+                std::cerr << "\n [" << GetName() << "] Rolling back [" << *it << "]" << std::endl;
+                subsystems_[*it]->Stop();
+            }
+            
+            return error;
         }
 
-        std::cout << "\n [" << GetName() << "] [" << name << "] Start successful" << std::endl;
+        started.push_back(name);
     }
 
-    std::cout << "\n [" << GetName() << "] All subsystems started successfully" << std::endl;
+    std::cout << "\n [" << GetName() << "] All subsystems started" << std::endl;
     return Error("");
 }
 

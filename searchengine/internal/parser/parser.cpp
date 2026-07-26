@@ -1,40 +1,50 @@
-#include <iostream>
+// internal/parser/parser.cpp
 #include "parser.hpp"
-#include "internal/kernal/core/headerfiles/sharedmutexs.hpp"
+#include <iostream>
 
+std::string Parser::Name() { return "Parser"; }
 
-std::string Parser::Name() {
-    return "Parser";
-};
-
-Error Parser::Init(){
-    std::cout << "\n [" << Name() <<"] Initializing..." << std::endl;
+Error Parser::OnInit() {
     return Error("");
-};
-
-Error Parser::Start(){
-    std::cout << "\n [" << Name() <<"] Starting..." << std::endl;
-    return Error("");
-};
-
-Error Parser::Stop(){
-    std::cout << "\n [" << Name() <<"] Stopping..." << std::endl;
-    return Error("");
-
 }
 
+Error Parser::OnStart() {
+    running_.store(true, std::memory_order_release);
+    run_thread_ = std::thread(&Parser::Run, this);
+    return Error("");
+}
 
-void Parser::Run(){
-    std::cout << "\n [" << Name() << "] Running..." << std::endl;
+Error Parser::OnStop() {
+    running_.store(false, std::memory_order_release);
+    
+    // Unblock the Run thread if it's waiting on pop_blocking
+    parserQueue_.push_blocking(std::string(""));
+    
+    if (run_thread_.joinable()) {
+        run_thread_.join();
+    }
+    
+    return Error("");
+}
 
-    while(true){
+void Parser::Run() {
+    std::cout << "\n [" << Name() << "] Processing started" << std::endl;
+    
+    int tokensProcessed = 0;
+    
+    while (running_.load(std::memory_order_acquire)) {
         std::string token;
-        parserQueue.pop_blocking(token);
-
-        if (token.empty()) {   // poison pill
-            std::cout << "[" << Name() << "] Received poison pill, exiting." << std::endl;
+        parserQueue_.pop_blocking(token);
+        
+        if (token.empty()) {
+            std::cout << "\n [" << Name() << "] Received end signal" << std::endl;
             break;
         }
-        std::cout << "Token: " << token << std::endl;
+        
+        // Process the token
+        std::cout << "\n [" << Name() << "] Token: " << token << std::endl;
+        tokensProcessed++;
     }
+    
+    std::cout << "\n [" << Name() << "] Done. Tokens: " << tokensProcessed << std::endl;
 }
