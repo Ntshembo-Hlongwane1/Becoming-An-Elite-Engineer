@@ -25,7 +25,7 @@ class Kernal {
 
         std::string GetName() const;
 
-        Error Register(const std::string& name, Subsystem* subsystem);
+        Error Register(SubsystemId id, Subsystem* subsystem);
 
         Error InitAll();
 
@@ -33,12 +33,14 @@ class Kernal {
 
         Error StopAll();
 
-        Subsystem* GetSubsystem(const std::string& name) const;
+        Subsystem* GetSubsystem(SubsystemId id) const;
 
 
     private:
-        std::map<std::string, std::unique_ptr<Subsystem>> subsystems_; // ownership
-        std::vector<std::string> order_; // registration order
+        std::map<SubsystemId, std::unique_ptr<Subsystem>> subsystems_; // ownership
+        std::vector<SubsystemId> order_; // registration order
 
         bool HasError(const Error& error) const;
+
+        Error StartSubSystem_(SubsystemId id);
 };

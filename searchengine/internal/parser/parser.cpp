@@ -1,6 +1,8 @@
 // internal/parser/parser.cpp
 #include "parser.hpp"
 #include <iostream>
+#include "internal/kernal/core/datastructures/bstree.hpp"
+#include "internal/kernal/core/utils/logger.hpp"
 
 std::string Parser::Name() { return "Parser"; }
 
@@ -28,7 +30,7 @@ Error Parser::OnStop() {
 }
 
 void Parser::Run() {
-    std::cout << "\n [" << Name() << "] Processing started" << std::endl;
+    Log(Name(), "Processing started");
     
     int tokensProcessed = 0;
     
@@ -36,15 +38,17 @@ void Parser::Run() {
         std::string token;
         parserQueue_.pop_blocking(token);
         
+        BSTree tree;
+
         if (token.empty()) {
-            std::cout << "\n [" << Name() << "] Received end signal" << std::endl;
+            Log(Name(), "Received end signal");
+            tree.print();
             break;
         }
         
-        // Process the token
-        std::cout << "\n [" << Name() << "] Token: " << token << std::endl;
-        tokensProcessed++;
+        tree.insert(token);
+        // Log(Name(), "Received Token: " + token);
     }
     
-    std::cout << "\n [" << Name() << "] Done. Tokens: " << tokensProcessed << std::endl;
+    Log(Name(), "Done. Tokens: " + std::to_string(tokensProcessed));
 }

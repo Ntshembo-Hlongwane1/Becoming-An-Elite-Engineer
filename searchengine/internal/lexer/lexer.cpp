@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include "internal/kernal/core/utils/stopwords.hpp"
+#include "internal/kernal/core/utils/logger.hpp"
 
 std::string Lexer::Name() { return "Lexer"; }
 
@@ -66,12 +67,12 @@ Error Lexer::OnStop() {
     // === STEP 6: Signal downstream (Parser) that we're done ===
     parserQueue_.push_blocking(std::string(""));
     
-    std::cout << "\n [" << Name() << "] All threads joined" << std::endl;
+    Log(Name(), "All threads joined");
     return Error("");
 }
 
 void Lexer::Run() {
-    std::cout << "\n [" << Name() << "] Coordinator started" << std::endl;
+    Log(Name(), "Coordinator started");
     
     int filesProcessed = 0;
     
@@ -81,7 +82,7 @@ void Lexer::Run() {
         
         // Check for poison pill (from DirectoryReader or from our own Stop)
         if (file.empty()) {
-            std::cout << "\n [" << Name() << "] Coordinator received end signal" << std::endl;
+            Log(Name(), "Coordinator received end signal");
             break;
         }
         
@@ -115,11 +116,11 @@ void Lexer::Run() {
         filesProcessed++;
     }
     
-    std::cout << "\n [" << Name() << "] Coordinator done. Files: " << filesProcessed << std::endl;
+    Log(Name(), "Coordinator done. Files: " + std::to_string(filesProcessed));
 }
 
 void Lexer::Worker(std::string id) {
-    std::cout << "\n [" << Name() << "] Worker " << id << " started" << std::endl;
+    Log(Name(), "Worker " + id + " started");
     
     int tokensProcessed = 0;
     
@@ -129,8 +130,7 @@ void Lexer::Worker(std::string id) {
         
         // Check for poison pill
         if (line.filepath.empty() && line.line.empty()) {
-            std::cout << "\n [" << Name() << "] Worker " << id 
-                      << " received shutdown signal" << std::endl;
+            Log(Name(), "Worker " + id + " received shutdown signal");
             break;
         }
         
@@ -155,8 +155,7 @@ void Lexer::Worker(std::string id) {
         }
     }
     
-    std::cout << "\n [" << Name() << "] Worker " << id << " done. Tokens: " 
-              << tokensProcessed << std::endl;
+    Log(Name(), "Worker " + id + " done. Tokens: " + std::to_string(tokensProcessed));
 }
 
 std::vector<std::string> Lexer::splitLine(std::string& line) {

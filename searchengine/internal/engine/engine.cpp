@@ -2,6 +2,7 @@
 #include "engine.hpp"
 #include <iostream>
 #include <algorithm>
+#include "internal/kernal/core/utils/logger.hpp"
 
 std::string Engine::Name() { return "Search Engine"; }
 
@@ -30,7 +31,7 @@ Error Engine::OnStop() {
 }
 
 void Engine::Run() {
-    std::cout << "\n [" << Name() << "] Ready for queries" << std::endl;
+    Log(Name(), "Ready for queries");
     
     while (running_.load(std::memory_order_acquire)) {
         std::string query = Prompt();
@@ -42,12 +43,12 @@ void Engine::Run() {
         Search(query);
     }
     
-    std::cout << "\n [" << Name() << "] Query loop exited" << std::endl;
+    Log(Name(), "Query loop exited");
 }
 
 std::string Engine::Prompt() {
     std::string prompt;
-    std::cout << "\n [" << Name() << "] Search: ";
+    Log(Name(), "Search: ");
     std::getline(std::cin, prompt);
     return prompt;
 }
@@ -59,14 +60,14 @@ void Engine::Search(std::string& query) {
     const auto& index = store_->GetSearchIndex();
     auto it = index.find(query);
     
-    std::cout << "\n Search Results: " << std::endl;
-    
+    Log(Name(), "Search Results: ");
+
     if (it == index.end()) {
-        std::cout << " No results found." << std::endl;
+        Log(Name(), "No results found.");
         return;
     }
-    
+
     for (const auto& doc : it->second) {
-        std::cout << " " << doc << std::endl;
+        Log(Name(), doc);
     }
 }

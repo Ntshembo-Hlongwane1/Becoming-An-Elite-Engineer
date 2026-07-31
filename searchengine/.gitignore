@@ -1,8 +1,13 @@
 # Ignore CMake build outputs and compiler artifacts
 build/
+build_bench/
 *.exe
 *.o
 *.obj
+
+# Ignore test executables in test folders
+internal/kernal/core/datastructures/tests/*.exe
+**/tests/*.exe
 
 # Ignore data generate_inventory.py will check 1g corpus of ecom data in this case CheckerSixty 60 inventory like
 data/

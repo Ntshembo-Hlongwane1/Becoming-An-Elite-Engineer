@@ -1,5 +1,8 @@
 // cmd/main.cpp
 #include <iostream>
+#include <csignal>
+#include <thread>
+#include <chrono>
 #include "internal/kernal/kernal.hpp"
 #include "internal/engine/engine.hpp"
 #include "internal/parser/parser.hpp"
@@ -7,9 +10,18 @@
 #include "internal/store/store.hpp"
 #include "internal/lexer/lexer.hpp"
 #include "internal/kernal/core/datastructures/ringbuffer.hpp"
+#include "internal/kernal/core/utils/logger.hpp"
+
+namespace {
+    volatile std::sig_atomic_t g_shutdown = 0;
+}
+
+extern "C" void HandleShutdownSignal(int) {
+    g_shutdown = 1;
+}
 
 int main() {
-    std::cout << "SonarSearch Starting..." << std::endl;
+    Log("SonarSearch", "Starting...");
 
     // ===== 1. Create the control plane =====
     Kernal kernal;
@@ -23,20 +35,20 @@ int main() {
     // Order matters! Dependencies must be registered first.
     
     // Store: no dependencies, passive data store
-    kernal.Register("Store", new Store());
-    
+    kernal.Register(SubsystemId::Store, new Store());
+
     // DirectoryReader: produces file paths → dirQueue
-    kernal.Register("Dir Reader", new DirectoryReader(dirQueue));
-    
+    kernal.Register(SubsystemId::DirReader, new DirectoryReader(dirQueue));
+
     // Lexer: consumes dirQueue, produces to lineQueue and parserQueue
-    kernal.Register("Lexer", new Lexer(dirQueue, lineQueue, parserQueue));
-    
+    kernal.Register(SubsystemId::Lexer, new Lexer(dirQueue, lineQueue, parserQueue));
+
     // Parser: consumes parserQueue
-    kernal.Register("Parser", new Parser(parserQueue));
-    
+    kernal.Register(SubsystemId::Parser, new Parser(parserQueue));
+
     // Engine: reads from Store
-    Store* store = dynamic_cast<Store*>(kernal.GetSubsystem("Store"));
-    kernal.Register("Search Engine", new Engine(store));
+    Store* store = dynamic_cast<Store*>(kernal.GetSubsystem(SubsystemId::Store));
+    kernal.Register(SubsystemId::Engine, new Engine(store));
 
     // ===== 4. Initialize all (validate, allocate, pre-flight check) =====
     Error initError = kernal.InitAll();
@@ -53,8 +65,13 @@ int main() {
     }
 
     // ===== 6. Wait for shutdown signal =====
-    std::cout << "\nSonarSearch Running. Press Enter to exit..." << std::endl;
-    std::cin.get();
+    std::signal(SIGINT, HandleShutdownSignal);
+    std::signal(SIGTERM, HandleShutdownSignal);
+
+    Log("SonarSearch", "Running. Press Ctrl+C to exit...");
+    while (!g_shutdown) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     // ===== 7. Graceful shutdown =====
     Error stopError = kernal.StopAll();
@@ -63,6 +80,6 @@ int main() {
         return 1;
     }
 
-    std::cout << "SonarSearch stopped cleanly." << std::endl;
+    Log("SonarSearch", "Stopped cleanly.");
     return 0;
 }

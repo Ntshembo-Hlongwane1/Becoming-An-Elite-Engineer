@@ -2,12 +2,26 @@
 #include "directoryreader.hpp"
 #include <iostream>
 #include <filesystem>
+#include "internal/kernal/core/utils/logger.hpp"
 
 std::string DirectoryReader::Name() { return "Dir Reader"; }
 
+namespace {
+    // Absolute location of the document corpus.
+    //
+    // This lives on C: (SSD) rather than beside the executable on D: (HDD),
+    // because a 100k-file scan is seek-bound and the drive it sits on dominates
+    // startup cost far more than anything in this pipeline.
+    //
+    // Being absolute also decouples the scan from the process working
+    // directory, so the engine and the benchmark harness read the same corpus
+    // no matter where they are launched from.
+    const char* const kCorpusPath = "C:/data";
+}
+
 Error DirectoryReader::OnInit() {
-    if (!std::filesystem::exists("data") || !std::filesystem::is_directory("data")) {
-        return Error("Data directory not found");
+    if (!std::filesystem::exists(kCorpusPath) || !std::filesystem::is_directory(kCorpusPath)) {
+        return Error(std::string("Data directory not found: ") + kCorpusPath);
     }
     return Error("");
 }
@@ -32,14 +46,15 @@ Error DirectoryReader::OnStop() {
 }
 
 void DirectoryReader::Run() {
-    std::cout << "\n [" << Name() << "] Scanning directory..." << std::endl;
-    
-    std::string dataPath = "data";
-    
-    for (const auto& entry : std::filesystem::directory_iterator(dataPath)) {
+    Log(Name(), "Scanning directory...");
+
+    // Iterating an absolute root makes entry.path() absolute too, so the paths
+    // handed to the Lexer resolve on their own. The Lexer's fopen() is
+    // unchanged - it simply receives "C:/data/x.txt" instead of "data/x.txt".
+    for (const auto& entry : std::filesystem::directory_iterator(kCorpusPath)) {
         // Check shutdown flag between iterations
         if (!running_.load(std::memory_order_acquire)) {
-            std::cout << "\n [" << Name() << "] Shutdown during scan, aborting" << std::endl;
+            Log(Name(), "Shutdown during scan, aborting");
             break;
         }
         
@@ -50,5 +65,5 @@ void DirectoryReader::Run() {
     
     dirQueue_.push_blocking(std::string(""));
     
-    std::cout << "\n [" << Name() << "] Scan complete" << std::endl;
+    Log(Name(), "Scan complete");
 }

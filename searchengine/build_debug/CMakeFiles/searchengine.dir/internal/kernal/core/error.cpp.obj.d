@@ -103,7 +103,7 @@ CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/uses_allocator_args.h \
  D:/mingw64/include/c++/16.1.0/tuple \
  D:/mingw64/include/c++/16.1.0/bits/invoke.h \
- D:\Escape\ the\ Abstraction\searchengine\internal\kernal\core\headerfiles/error.h \
+ D:\Escape\ the\ Abstraction\searchengine\internal\kernal\core\headerfiles/error.hpp \
  D:/mingw64/include/c++/16.1.0/iostream \
  D:/mingw64/include/c++/16.1.0/ostream \
  D:/mingw64/include/c++/16.1.0/bits/ostream.h \
@@ -153,4 +153,5 @@ CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/ostream_print.h \
  D:/mingw64/include/c++/16.1.0/bits/ostream.tcc \
  D:/mingw64/include/c++/16.1.0/istream \
- D:/mingw64/include/c++/16.1.0/bits/istream.tcc
+ D:/mingw64/include/c++/16.1.0/bits/istream.tcc \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/utils/logger.hpp

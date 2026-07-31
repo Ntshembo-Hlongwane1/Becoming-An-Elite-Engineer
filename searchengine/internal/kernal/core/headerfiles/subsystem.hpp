@@ -3,6 +3,8 @@
 #include <atomic>
 #include <iostream>
 #include "internal/kernal/core/headerfiles/error.hpp"
+#include "internal/kernal/core/utils/logger.hpp"
+#include <cstdint>
 
 class Subsystem {
     public:
@@ -22,7 +24,7 @@ class Subsystem {
                 return Error("[" + Name() + "] Cannot Initialize not in CREATED state");
             }
 
-            std::cout << "\n [" << Name() << "] Initializing..." << std::endl;
+            Log(Name(), "Initializing...");
             Error error = OnInit();
 
             if (error.GetMessage().empty()){
@@ -37,7 +39,7 @@ class Subsystem {
                 return Error("[" + Name() + "] Cannot Start - not in INITIALIZED state");
             }
 
-            std::cout << "\n [" << Name() << "] Starting..." << std::endl;
+            Log(Name(), "Starting...");
             Error error = OnStart();
 
             if (error.GetMessage().empty()){
@@ -49,14 +51,14 @@ class Subsystem {
 
         Error Stop() {
             if (state_ != State::STARTED) {
-                std::cout << "\n [" << Name() << "] Not started, skipping stop" << std::endl;
+                Log(Name(), "Not started, skipping stop");
                 return Error("");
             }
-            std::cout << "\n [" << Name() << "] Stopping..." << std::endl;
+            Log(Name(), "Stopping...");
             state_ = State::STOPPING;
             Error err = OnStop();
             state_ = State::STOPPED;
-            std::cout << "\n [" << Name() << "] Stopped" << std::endl;
+            Log(Name(), "Stopped");
             return err;
         }
 
@@ -73,3 +75,26 @@ class Subsystem {
         private:
             State state_ = State::CREATED;
 };
+
+enum class SubsystemId : std::uint8_t {
+    Store,
+    DirReader,
+    Lexer,
+    Parser,
+    Engine,
+};
+
+inline std::string_view ToString(SubsystemId id) {
+    switch (id) {
+        case SubsystemId::Store:     return "Store";
+        case SubsystemId::DirReader: return "Dir Reader";
+        case SubsystemId::Lexer:     return "Lexer";
+        case SubsystemId::Parser:    return "Parser";
+        case SubsystemId::Engine:    return "Search Engine";
+    }
+    return "UnknownSubsystem";
+}
+
+inline std::string ToStdString(SubsystemId id) {
+    return std::string(ToString(id));
+}

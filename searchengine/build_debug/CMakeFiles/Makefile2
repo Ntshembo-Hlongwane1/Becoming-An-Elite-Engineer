@@ -84,12 +84,12 @@ clean: CMakeFiles/searchengine.dir/clean
 CMakeFiles/searchengine.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=1,2,3,4,5,6,7,8 "Built target searchengine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target searchengine"
 .PHONY : CMakeFiles/searchengine.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/searchengine.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" 8
+	$(CMAKE_COMMAND) -E cmake_progress_start "D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/searchengine.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" 0
 .PHONY : CMakeFiles/searchengine.dir/rule
@@ -101,7 +101,7 @@ searchengine: CMakeFiles/searchengine.dir/rule
 # codegen rule for target.
 CMakeFiles/searchengine.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=1,2,3,4,5,6,7,8 "Finished codegen for target searchengine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Finished codegen for target searchengine"
 .PHONY : CMakeFiles/searchengine.dir/codegen
 
 # clean rule for target.

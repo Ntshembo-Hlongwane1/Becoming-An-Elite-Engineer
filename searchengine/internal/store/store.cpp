@@ -8,6 +8,13 @@ Error Store::OnInit() {
 }
 
 Error Store::OnStart() {
+
+    if (searchIndex_.empty()){
+        hasSearchIndex = false;
+    }else{
+        hasSearchIndex = true;
+    }
+
     return Error("");
 }
 
@@ -29,4 +36,8 @@ void Store::AddSearchIndex(std::string key, const std::string& doc) {
 
 const std::unordered_map<std::string, std::vector<std::string>>& Store::GetSearchIndex() const {
     return searchIndex_;
+}
+
+bool Store::HasSearchIndex(){
+    return hasSearchIndex;
 }

@@ -1,11 +1,14 @@
 #include "kernal.hpp"
 #include <iostream>
+#include "internal/store/store.hpp"
+#include "internal/kernal/core/headerfiles/subsystem.hpp"
+#include "internal/kernal/core/utils/logger.hpp"
  
 Kernal::~Kernal(){
     for (auto it = order_.rbegin(); it != order_.rend(); ++it) {
         Subsystem* sub = subsystems_[*it].get();
         if (sub->GetState() == Subsystem::State::STARTED) {
-            std::cerr << "\n [" << GetName() << "] WARNING: " << *it 
+            std::cerr << "\n [" << GetName() << "] WARNING: " << ToString(*it)
                       << " was not stopped before Kernal destruction. "
                       << "Stopping now." << std::endl;
             sub->Stop();
@@ -21,84 +24,98 @@ bool Kernal::HasError(const Error& error) const {
     return !error.GetMessage().empty();
 }
 
-Error Kernal::Register(const std::string& name, Subsystem* subsystem) {
-    if (subsystems_.find(name) != subsystems_.end()) {
+Error Kernal::Register(SubsystemId id, Subsystem* subsystem) {
+    const std::string name = ToStdString(id);
+
+    if (subsystems_.find(id) != subsystems_.end()) {
         delete subsystem; // avoid leak
         return Error("[" + name + "] Subsystem already registered");
     }
 
-    subsystems_[name] = std::unique_ptr<Subsystem>(subsystem);
-    order_.push_back(name);
+    subsystems_[id] = std::unique_ptr<Subsystem>(subsystem);
+    order_.push_back(id);
 
-    std::cout << "\n [" << GetName() << "] [" << name << "] Subsystem registered" << std::endl;
+    Log(GetName(), "[" + name + "] Subsystem registered");
     return Error("");
 }
 
 Error Kernal::InitAll() {
-    std::cout << "\n [" << GetName() << "] Initializing all subsystems..." << std::endl;
+    Log(GetName(), "Initializing all subsystems...");
 
-    for (const auto& name : order_) {
-        Subsystem* subsystem = subsystems_[name].get();
+    for (const auto& id : order_) {
+        const std::string name = ToStdString(id);
+        Subsystem* subsystem = subsystems_[id].get();
         Error error = subsystem->Init();
 
         if (HasError(error)) {
-            std::cout << "\n [" << GetName() << "] [" << name << "] Initialization failed: "
-                      << error.GetMessage() << std::endl;
+            Log(GetName(), "[" + name + "] Initialization failed: " + error.GetMessage());
             return Error("[" + name + "] Initialization failed: " + error.GetMessage());
         }
 
-        std::cout << "\n [" << GetName() << "] [" << name << "] Initialization successful" << std::endl;
+        Log(GetName(), "[" + name + "] Initialization successful");
     }
 
-    std::cout << "\n [" << GetName() << "] All subsystems initialized successfully" << std::endl;
+    Log(GetName(), "All subsystems initialized successfully");
     return Error("");
 }
 
 Error Kernal::StartAll() {
-    std::cout << "\n [" << GetName() << "] Starting all subsystems..." << std::endl;
+    Log(GetName(), "Starting all subsystems...");
 
-    std::vector<std::string> started;
+    std::vector<SubsystemId> started;
 
-    for (const auto& name : order_) {
-        Error error = subsystems_[name]->Start();
+    Store* store = static_cast<Store*>(GetSubsystem(SubsystemId::Store));
+    StartSubSystem_(SubsystemId::Store);
 
-        if (HasError(error)) {
-            std::cerr << "\n [" << GetName() << "] [" << name 
-                      << "] Start failed, rolling back..." << std::endl;
-            
-            // ROLLBACK: Stop everything we already started, in reverse
-            for (auto it = started.rbegin(); it != started.rend(); ++it) {
-                std::cerr << "\n [" << GetName() << "] Rolling back [" << *it << "]" << std::endl;
-                subsystems_[*it]->Stop();
-            }
-            
-            return error;
-        }
+    if (store->HasSearchIndex()){
+        Log(GetName(), "INDEX AVAILABLE");
+    }else{
+        
+        StartSubSystem_(SubsystemId::DirReader);
+        StartSubSystem_(SubsystemId::Lexer);
+        StartSubSystem_(SubsystemId::Parser);
 
-        started.push_back(name);
+        Log(GetName(), "NO INDEX");
     }
 
-    std::cout << "\n [" << GetName() << "] All subsystems started" << std::endl;
+    // for (const auto& name : order_) {
+    //     Error error = subsystems_[name]->Start();
+
+    //     if (HasError(error)) {
+    //         std::cerr << "\n [" << GetName() << "] [" << name 
+    //                   << "] Start failed, rolling back..." << std::endl;
+            
+    //         // ROLLBACK: Stop everything we already started, in reverse
+    //         for (auto it = started.rbegin(); it != started.rend(); ++it) {
+    //             std::cerr << "\n [" << GetName() << "] Rolling back [" << *it << "]" << std::endl;
+    //             subsystems_[*it]->Stop();
+    //         }
+            
+    //         return error;
+    //     }
+
+    //     started.push_back(name);
+    // }
+
     return Error("");
 }
 
 Error Kernal::StopAll() {
-    std::cout << "\n [" << GetName() << "] Stopping all subsystems..." << std::endl;
+    Log(GetName(), "Stopping all subsystems...");
 
     std::string errors;
 
     // Reverse order: stop in reverse registration
     for (auto it = order_.rbegin(); it != order_.rend(); ++it) {
-        const std::string& name = *it;
-        Subsystem* subsystem = subsystems_[name].get();
+        const std::string name = ToStdString(*it);
+        Subsystem* subsystem = subsystems_[*it].get();
         Error error = subsystem->Stop();
 
         if (HasError(error)) {
-            std::cout << "\n [" << GetName() << "] [" << name << "] Stop failed: "
-                      << error.GetMessage() << std::endl;
+            Log(GetName(), "[" + name + "] Stop failed: " + error.GetMessage());
             errors += "[" + name + "] Stop failed: " + error.GetMessage() + "\n";
         } else {
-            std::cout << "\n [" << GetName() << "] [" << name << "] Stop successful" << std::endl;
+            Log(GetName(), "[" + name + "] Stop successful");
         }
     }
 
@@ -109,10 +126,15 @@ Error Kernal::StopAll() {
     return Error("");
 }
 
-Subsystem* Kernal::GetSubsystem(const std::string& name) const {
-    auto it = subsystems_.find(name);
+Subsystem* Kernal::GetSubsystem(SubsystemId id) const {
+    auto it = subsystems_.find(id);
     if (it != subsystems_.end()) {
         return it->second.get();
     }
     return nullptr;
+}
+
+Error Kernal::StartSubSystem_(SubsystemId id){
+    Error error = subsystems_[id]->Start();
+    return error;
 }

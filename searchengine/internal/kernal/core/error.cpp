@@ -1,11 +1,12 @@
 #include <string>
 #include "headerfiles/error.hpp"
 #include <iostream>
+#include "internal/kernal/core/utils/logger.hpp"
 
 Error::Error(const std::string& message) : message(message) {}
 
 void Error::print() const {
-    std::cout << "Error: " << message << std::endl;
+    Log("Error", message);
 }
 
 std::string Error::GetMessage() const {

@@ -13,6 +13,7 @@ public:
     std::vector<std::string> GetDataFiles() const;
     void AddSearchIndex(std::string key, const std::string& doc);
     const std::unordered_map<std::string, std::vector<std::string>>& GetSearchIndex() const;
+    bool HasSearchIndex();
 
 protected:
     Error OnInit() override;
@@ -22,4 +23,5 @@ protected:
 private:
     std::vector<std::string> dataFiles_;
     std::unordered_map<std::string, std::vector<std::string>> searchIndex_;
+    bool hasSearchIndex = false;
 };

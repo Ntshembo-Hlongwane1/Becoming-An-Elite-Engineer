@@ -1,7 +1,7 @@
 CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: \
  D:\Escape\ the\ Abstraction\searchengine\internal\store\store.cpp \
- D:\Escape\ the\ Abstraction\searchengine\internal\store\store.h \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/subsystem.h \
+ D:\Escape\ the\ Abstraction\searchengine\internal\store\store.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/subsystem.hpp \
  D:/mingw64/include/c++/16.1.0/string \
  D:/mingw64/include/c++/16.1.0/bits/requires_hosted.h \
  D:/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -105,19 +105,12 @@ CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/uses_allocator_args.h \
  D:/mingw64/include/c++/16.1.0/tuple \
  D:/mingw64/include/c++/16.1.0/bits/invoke.h \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/error.h \
- D:/mingw64/include/c++/16.1.0/vector \
- D:/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_vector.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_bvector.h \
- D:/mingw64/include/c++/16.1.0/bits/vector.tcc \
- D:/mingw64/include/c++/16.1.0/unordered_map \
- D:/mingw64/include/c++/16.1.0/bits/unordered_map.h \
- D:/mingw64/include/c++/16.1.0/bits/hashtable.h \
- D:/mingw64/include/c++/16.1.0/bits/hashtable_policy.h \
- D:/mingw64/include/c++/16.1.0/ext/aligned_buffer.h \
- D:/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
- D:/mingw64/include/c++/16.1.0/bits/node_handle.h \
+ D:/mingw64/include/c++/16.1.0/atomic \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_base.h \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_lockfree_defines.h \
+ D:/mingw64/include/c++/16.1.0/cstdint \
+ D:/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
+ D:/mingw64/x86_64-w64-mingw32/include/stdint.h \
  D:/mingw64/include/c++/16.1.0/iostream \
  D:/mingw64/include/c++/16.1.0/ostream \
  D:/mingw64/include/c++/16.1.0/bits/ostream.h \
@@ -167,4 +160,25 @@ CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/ostream_print.h \
  D:/mingw64/include/c++/16.1.0/bits/ostream.tcc \
  D:/mingw64/include/c++/16.1.0/istream \
- D:/mingw64/include/c++/16.1.0/bits/istream.tcc
+ D:/mingw64/include/c++/16.1.0/bits/istream.tcc \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/error.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/utils/logger.hpp \
+ D:/mingw64/include/c++/16.1.0/vector \
+ D:/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_vector.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_bvector.h \
+ D:/mingw64/include/c++/16.1.0/bits/vector.tcc \
+ D:/mingw64/include/c++/16.1.0/unordered_map \
+ D:/mingw64/include/c++/16.1.0/bits/unordered_map.h \
+ D:/mingw64/include/c++/16.1.0/bits/hashtable.h \
+ D:/mingw64/include/c++/16.1.0/bits/hashtable_policy.h \
+ D:/mingw64/include/c++/16.1.0/ext/aligned_buffer.h \
+ D:/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
+ D:/mingw64/include/c++/16.1.0/bits/node_handle.h \
+ D:/mingw64/include/c++/16.1.0/mutex \
+ D:/mingw64/include/c++/16.1.0/bits/chrono.h \
+ D:/mingw64/include/c++/16.1.0/ratio D:/mingw64/include/c++/16.1.0/limits \
+ D:/mingw64/include/c++/16.1.0/ctime \
+ D:/mingw64/include/c++/16.1.0/bits/parse_numbers.h \
+ D:/mingw64/include/c++/16.1.0/bits/std_mutex.h \
+ D:/mingw64/include/c++/16.1.0/bits/unique_lock.h
