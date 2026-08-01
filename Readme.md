@@ -1,32 +1,203 @@
-# Becoming an Elite Engineer
+# Escape the Abstraction
 
-> Escape the Abstraction is a long-term engineering journey to understand how modern software systems actually work—from low-level programming and operating systems to distributed systems, databases, search engines, compilers, networking, and large-scale infrastructure.
+> A long-term engineering journey to understand computing from first principles—starting with software systems, descending through operating systems and kernels, and ultimately into firmware, embedded systems, reverse engineering, and security.
 
-This repository documents that journey.
+The objective isn't to recreate existing software.
 
-The goal isn't simply to learn another programming language or complete coding challenges.
-
-The goal is to build the depth required to understand and engineer software systems from first principles.
+The objective is to become the kind of engineer who can understand, build, debug, reverse engineer and secure any computing system.
 
 ---
 
-## Philosophy
+# Philosophy
 
-Modern software development is built on layers of abstraction.
+Modern computing is built upon layers of abstraction.
 
-Frameworks hide operating systems.
+Frameworks hide distributed systems.
+
+Distributed systems hide networking.
 
 Operating systems hide hardware.
 
-Databases hide storage engines.
+Hardware hides the processor.
 
-Cloud platforms hide distributed systems.
+Abstractions are incredibly useful—but they can also hide understanding.
 
-This project intentionally peels back those layers.
+This repository intentionally peels those layers away.
 
-Instead of only using technology, the objective is to understand how and why it works.
+Every project exists to answer one question:
 
-Every project in this repository is designed to recreate a production-grade system from scratch while studying the computer science concepts behind it.
+> **How does this system actually work?**
+
+Instead of consuming technology, this repository is about engineering it.
+
+---
+
+# Roadmap
+
+The journey is divided into four layers.
+
+Each layer builds the foundation for the next.
+
+```
+Competitive Programming
+          │
+          ▼
+Layer 1 ─ Systems Engineering
+          │
+          ▼
+Layer 2 ─ Reverse Engineering
+          │
+          ▼
+Layer 3 ─ Operating Systems & Kernels
+          │
+          ▼
+Layer 4 ─ Firmware & Embedded Systems
+```
+
+---
+
+# Competitive Programming
+
+Alongside every layer is an ongoing competitive programming journey using C++.
+
+The goal isn't only interview preparation.
+
+It is to continuously improve:
+
+- Algorithmic thinking
+- Problem solving
+- Data structures
+- Mathematical reasoning
+- Writing correct code under pressure
+
+Solutions are organised by Codeforces rating.
+
+```
+CodeForces/
+├── 800/
+├── 900/
+├── 1000/
+└── ...
+```
+
+---
+
+# Layer 1 — Systems Engineering
+
+Understanding modern backend infrastructure by rebuilding production systems.
+
+Projects include:
+
+- Search Engine
+- HTTP Server
+- Distributed Cache
+- Database Engine
+- Object Storage
+- Message Queue
+- Reverse Proxy & Load Balancer
+
+Focus areas:
+
+- C++
+- Networking
+- Storage Engines
+- Concurrency
+- Performance
+- Distributed Systems
+- System Design
+
+---
+
+# Layer 2 — Reverse Engineering
+
+Learning to understand software without source code.
+
+Focus areas:
+
+- Assembly
+- x86-64
+- ARM64
+- Binary Analysis
+- Debugging
+- Memory Corruption
+- Exploit Development
+- Program Analysis
+
+---
+
+# Layer 3 — Operating Systems & Kernels
+
+Understanding how software executes.
+
+Topics include:
+
+- Boot Process
+- Virtual Memory
+- Scheduling
+- Processes
+- Threads
+- System Calls
+- File Systems
+- Synchronisation
+- Kernel Development
+
+---
+
+# Layer 4 — Firmware & Embedded Systems
+
+Applying everything from the previous layers to connected devices.
+
+Projects include:
+
+- Secure Door Access Platform
+- Industrial Monitoring System
+- IoT Sensor Network
+- Building Automation
+- Embedded Security Labs
+
+Focus areas:
+
+- Embedded C
+- Firmware
+- Pico W
+- Networking
+- IoT
+- Reverse Engineering
+- Hardware Security
+
+---
+
+# Investigation Framework
+
+Alongside the engineering projects is a reusable investigation framework.
+
+Every investigation follows the same workflow:
+
+```
+Target
+    │
+Recon
+    │
+Architecture Model
+    │
+Hypothesis
+    │
+Experiment
+    │
+Evidence
+    │
+Finding
+    │
+Report
+```
+
+The framework is designed to become a long-term engineering notebook for:
+
+- Bug bounty
+- Reverse engineering
+- Vulnerability research
+- Embedded systems
+- Security assessments
 
 ---
 
@@ -34,137 +205,56 @@ Every project in this repository is designed to recreate a production-grade syst
 
 ```
 .
-├── CodeForces/
-│   ├── 800/
-│   ├── 900/
-│   ├── 1000/
+├── codeforces/
+│
+├── layer1/
+│   ├── search-engine/
+│   ├── http-server/
+│   ├── distributed-cache/
+│   ├── database-engine/
+│   ├── object-storage/
 │   └── ...
 │
-├── searchengine/
+├── layer2/
 │
-├── redis/
+├── layer3/
 │
-├── git/
-│
-├── httpserver/
-│
-├── ...
+├── layer4/
 │
 └── README.md
 ```
 
+---
+
+# Learning Principles
+
+- Build before reading production implementations.
+- Read production implementations afterwards.
+- Understand trade-offs before optimising.
+- Measure performance instead of guessing.
+- Document every important design decision.
+- Learn from failures and iterate.
 
 ---
 
-# Escape the Abstraction Roadmap
+# Long-Term Goal
 
-The projects gradually move lower into the software stack.
+To develop the engineering depth required to confidently investigate, build, reverse engineer and secure systems ranging from:
 
-| Project | Focus |
-|----------|------|
-| Search Engine | Information Retrieval, Indexing, Ranking |
-| Redis Clone | Memory Management, Networking, Data Structures |
-| Git Clone | Content Addressing, Storage, Hashing |
-| HTTP Server | TCP/IP, HTTP, Concurrency |
-| Reverse Proxy & Load Balancer | Networking, Scheduling |
-| Database Engine | Storage Engines, B-Trees, Transactions |
-| Kafka Clone | Distributed Logs, Replication |
-| Distributed Cache | Consistency, Partitioning |
-| Raft Consensus | Distributed Consensus |
-| Matching Engine | Low-Latency Systems |
-| Programming Language | Parsing, ASTs, Compilation |
-| Virtual Machine | Bytecode, Execution |
-
----
-
-# Competitive Programming
-
-Alongside the systems projects, I solve Codeforces problems in C++ to continuously improve problem solving, algorithmic thinking, and data structure intuition.
-
-Solutions are organised by difficulty.
-
----
-
-# Learning Goals
-
-This repository focuses on developing deep understanding of:
-
-- Data Structures
-- Algorithms
+- Backend Infrastructure
 - Operating Systems
-- Computer Networks
-- Information Retrieval
-- Distributed Systems
-- Database Internals
-- Concurrency
-- Memory Management
-- Compilers
-- Storage Engines
-- Search Engines
-- Performance Engineering
-- System Design
+- Mobile Applications
+- Desktop Software
+- Firmware
+- Embedded Devices
+- Industrial Systems
+- Automotive Systems
+- Robotics
+
+The destination isn't a specific job title.
+
+The destination is becoming an engineer capable of understanding any computing system from first principles.
 
 ---
 
-# Principles
-
-- Learn by building.
-- Read production code.
-- Prefer understanding over memorisation.
-- Build systems from first principles.
-- Write simple, maintainable code.
-- Continuously refactor with new knowledge.
-- Document the reasoning behind design decisions.
-
----
-
-# Tech Stack
-
-- C++
-- CMake
-- Catch2 / GoogleTest
-- Docker
-- Linux
-- Git
-
----
-
-# Progress
-
-- [ ] Search Engine
-- [ ] Redis Clone
-- [ ] Git Clone
-- [ ] HTTP Server
-- [ ] Reverse Proxy
-- [ ] Database Engine
-- [ ] Kafka Clone
-- [ ] Distributed Cache
-- [ ] Raft Consensus
-- [ ] Matching Engine
-- [ ] Programming Language
-- [ ] Virtual Machine
-
----
-
-# Why?
-
-The objective isn't to reinvent existing software.
-
-It's to understand the engineering trade-offs behind the software that powers modern computing.
-
-Every project is an opportunity to answer questions like:
-
-- Why is Redis so fast?
-- Why does Lucene use immutable segments?
-- How does Git store history?
-- Why are B-Trees used in databases?
-- How does Raft guarantee consensus?
-- Why are search engines built the way they are?
-- How do operating systems schedule work?
-- How do distributed systems remain available?
-
-Understanding these systems makes it possible to design better software regardless of language, framework, or industry.
-
----
-
-> "The best engineers don't just know how to use abstractions—they know what's underneath them."
+> "The best engineers don't just use abstractions—they understand what lies beneath them."
