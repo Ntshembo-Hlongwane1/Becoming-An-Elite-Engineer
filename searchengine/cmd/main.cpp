@@ -10,7 +10,9 @@
 #include "internal/store/store.hpp"
 #include "internal/lexer/lexer.hpp"
 #include "internal/kernal/core/datastructures/ringbuffer.hpp"
+#include "internal/kernal/core/headerfiles/indexresult.hpp"
 #include "internal/kernal/core/utils/logger.hpp"
+#include <future>
 
 namespace {
     volatile std::sig_atomic_t g_shutdown = 0;
@@ -31,9 +33,14 @@ int main() {
     RingBuffer<ILP, 1024> lineQueue;
     RingBuffer<std::string, 1024> parserQueue;
 
-    // ===== 3. Register subsystems (Kernal takes ownership) =====
+    // ===== 3. Create the completion channel =====
+    // The future must be carved off before the promise is moved into the Parser.
+    std::promise<IndexResult> indexPromise;
+    std::future<IndexResult> indexFuture = indexPromise.get_future();
+
+    // ===== 4. Register subsystems (Kernal takes ownership) =====
     // Order matters! Dependencies must be registered first.
-    
+
     // Store: no dependencies, passive data store
     kernal.Register(SubsystemId::Store, new Store());
 
@@ -43,40 +50,45 @@ int main() {
     // Lexer: consumes dirQueue, produces to lineQueue and parserQueue
     kernal.Register(SubsystemId::Lexer, new Lexer(dirQueue, lineQueue, parserQueue));
 
-    // Parser: consumes parserQueue
-    kernal.Register(SubsystemId::Parser, new Parser(parserQueue));
+    // Parser: consumes parserQueue, reports completion through the promise
+    kernal.Register(SubsystemId::Parser, new Parser(parserQueue, std::move(indexPromise)));
 
     // Engine: reads from Store
     Store* store = dynamic_cast<Store*>(kernal.GetSubsystem(SubsystemId::Store));
     kernal.Register(SubsystemId::Engine, new Engine(store));
 
-    // ===== 4. Initialize all (validate, allocate, pre-flight check) =====
-    Error initError = kernal.InitAll();
-    if (!initError.GetMessage().empty()) {
-        std::cerr << "Init failed: " << initError.GetMessage() << std::endl;
-        return 1;
-    }
+    kernal.SetIndexFuture(std::move(indexFuture));
 
-    // ===== 5. Start all (create threads, begin processing) =====
-    Error startError = kernal.StartAll();
-    if (!startError.GetMessage().empty()) {
-        std::cerr << "Start failed: " << startError.GetMessage() << std::endl;
-        return 1;
-    }
-
-    // ===== 6. Wait for shutdown signal =====
+    // ===== 5. Install signal handlers before StartAll, so a long cold boot is
+    //          interruptible while the Kernal is parked on the future =====
     std::signal(SIGINT, HandleShutdownSignal);
     std::signal(SIGTERM, HandleShutdownSignal);
+    kernal.SetAbortCheck([] { return g_shutdown != 0; });
+
+    // ===== 6. Initialize all (validate, allocate, pre-flight check) =====
+    Error initError = kernal.InitAll();
+    if (!initError.GetMessage().empty()) {
+        LogError("SonarSearch", "Init failed: " + initError.GetMessage());
+        return 1;
+    }
+
+    // ===== 7. Start all (create threads, begin processing) =====
+    Error startError = kernal.StartAll();
+    if (!startError.GetMessage().empty()) {
+        LogError("SonarSearch", "Start failed: " + startError.GetMessage());
+        kernal.StopAll();
+        return 1;
+    }
 
     Log("SonarSearch", "Running. Press Ctrl+C to exit...");
     while (!g_shutdown) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    // ===== 7. Graceful shutdown =====
+    // ===== 8. Graceful shutdown =====
     Error stopError = kernal.StopAll();
     if (!stopError.GetMessage().empty()) {
-        std::cerr << "Shutdown errors:\n" << stopError.GetMessage() << std::endl;
+        LogError("SonarSearch", "Shutdown errors:\n" + stopError.GetMessage());
         return 1;
     }
 

@@ -1,16 +1,22 @@
 #include "kernal.hpp"
+#include <chrono>
 #include <iostream>
 #include "internal/store/store.hpp"
 #include "internal/kernal/core/headerfiles/subsystem.hpp"
+#include "internal/kernal/core/headerfiles/indexresult.hpp"
 #include "internal/kernal/core/utils/logger.hpp"
- 
+
+namespace {
+    constexpr auto kIndexTimeout   = std::chrono::minutes(12);
+    constexpr auto kIndexHeartbeat = std::chrono::seconds(5);
+}
+
 Kernal::~Kernal(){
     for (auto it = order_.rbegin(); it != order_.rend(); ++it) {
         Subsystem* sub = subsystems_[*it].get();
         if (sub->GetState() == Subsystem::State::STARTED) {
-            std::cerr << "\n [" << GetName() << "] WARNING: " << ToString(*it)
-                      << " was not stopped before Kernal destruction. "
-                      << "Stopping now." << std::endl;
+            LogError(GetName(), "WARNING: " + ToStdString(*it)
+                              + " was not stopped before Kernal destruction. Stopping now.");
             sub->Stop();
         }
     }
@@ -59,23 +65,82 @@ Error Kernal::InitAll() {
     return Error("");
 }
 
+void Kernal::SetIndexFuture(std::future<IndexResult> indexReady) {
+    indexReady_ = std::move(indexReady);
+}
+
+void Kernal::SetAbortCheck(std::function<bool()> abortCheck) {
+    abortCheck_ = std::move(abortCheck);
+}
+
+Error Kernal::AwaitIndexing_() {
+    if (!indexReady_.valid()) {
+        return Error("No indexing future was wired; cannot await completion");
+    }
+
+    Log(GetName(), "Waiting for indexing to complete...");
+
+    const auto deadline = std::chrono::steady_clock::now() + kIndexTimeout;
+
+    while (indexReady_.wait_for(kIndexHeartbeat) != std::future_status::ready) {
+        if (abortCheck_ && abortCheck_()) {
+            return Error("Shutdown requested during indexing");
+        }
+
+        if (std::chrono::steady_clock::now() >= deadline) {
+            return Error("Indexing timed out; the pipeline did not signal completion");
+        }
+
+        Log(GetName(), "Still indexing...");
+    }
+
+    // get(), not wait(): only get() rethrows what the Parser stored.
+    try {
+        const IndexResult result = indexReady_.get();
+
+        Log(GetName(), "Indexing complete: " + std::to_string(result.tokensIndexed)
+                     + " tokens in " + std::to_string(result.elapsedTime.count()) + " ms");
+        return Error("");
+
+    } catch (const IndexingError& error) {
+        return Error(std::string("Indexing failed: ") + error.what());
+    } catch (const std::future_error& error) {
+        return Error(std::string("Parser did not complete indexing: ") + error.what());
+    } catch (const std::exception& error) {
+        return Error(std::string("Unexpected indexing error: ") + error.what());
+    }
+}
+
 Error Kernal::StartAll() {
     Log(GetName(), "Starting all subsystems...");
 
-    std::vector<SubsystemId> started;
-
     Store* store = static_cast<Store*>(GetSubsystem(SubsystemId::Store));
-    StartSubSystem_(SubsystemId::Store);
+
+    Error error = StartSubSystem_(SubsystemId::Store);
+    if (HasError(error)) {
+        return error;
+    }
 
     if (store->HasSearchIndex()){
         Log(GetName(), "INDEX AVAILABLE");
     }else{
-        
-        StartSubSystem_(SubsystemId::DirReader);
-        StartSubSystem_(SubsystemId::Lexer);
-        StartSubSystem_(SubsystemId::Parser);
 
-        Log(GetName(), "NO INDEX");
+        for (SubsystemId id : {SubsystemId::DirReader, SubsystemId::Lexer, SubsystemId::Parser}) {
+            error = StartSubSystem_(id);
+            if (HasError(error)) {
+                return error;
+            }
+        }
+
+        error = AwaitIndexing_();
+        if (HasError(error)) {
+            return error;
+        }
+    }
+
+    error = StartSubSystem_(SubsystemId::Engine);
+    if (HasError(error)) {
+        return error;
     }
 
     // for (const auto& name : order_) {

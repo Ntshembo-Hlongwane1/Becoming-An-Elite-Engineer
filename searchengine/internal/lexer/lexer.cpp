@@ -17,58 +17,76 @@ Error Lexer::OnInit() {
 
 Error Lexer::OnStart() {
     running_.store(true, std::memory_order_release);
-    
+    downstreamClosed_.store(false, std::memory_order_release);
+
+    // Must be set before the workers exist, or a fast worker could decrement it
+    // past zero and take the last-one-out branch while others are still running.
+    activeWorkers_.store(KWorkerCount, std::memory_order_release);
+
     try {
-        worker1_ = std::thread(&Lexer::Worker, this, "1");
-        worker2_ = std::thread(&Lexer::Worker, this, "2");
-        
+        workers_.reserve(KWorkerCount);
+        for (int i = 0; i < KWorkerCount; ++i) {
+            workers_.emplace_back(&Lexer::Worker, this, std::to_string(i + 1));
+        }
+
         run_thread_ = std::thread(&Lexer::Run, this);
     } catch (const std::system_error& e) {
         running_.store(false, std::memory_order_release);
-        
-        // Send poison pills to any workers that started
-        lineQueue_.push_blocking(ILP{"", ""});
-        lineQueue_.push_blocking(ILP{"", ""});
-        
-        if (worker1_.joinable()) worker1_.join();
-        if (worker2_.joinable()) worker2_.join();
+
+        // Only the workers that actually spawned will consume a pill.
+        activeWorkers_.store(static_cast<int>(workers_.size()), std::memory_order_release);
+        for (size_t i = 0; i < workers_.size(); ++i) {
+            lineQueue_.push_blocking(ILP{"", ""});
+        }
+
+        for (auto& worker : workers_) {
+            if (worker.joinable()) worker.join();
+        }
+        workers_.clear();
+
         if (run_thread_.joinable()) run_thread_.join();
-        
+
+        CloseParserQueue_();
+
         return Error("Thread creation failed: " + std::string(e.what()));
     }
-    
+
     return Error("");
 }
 
 Error Lexer::OnStop() {
-    // === STEP 1: Signal all threads to stop ===
+    // Downstream pills are no longer pushed from here. Each thread forwards its own
+    // end-of-stream marker on the way out of its loop, so normal completion and abort
+    // take the same path. Stop only has to: signal, unblock our own input, and join.
     running_.store(false, std::memory_order_release);
-    
-    // === STEP 2: Unblock the Run thread ===
+
     dirQueue_.push_blocking(std::string(""));
-    
-    // === STEP 3: Wait for the Run thread to exit ===
+
+    // Run() must be joined first: on its way out it pushes the pills that free the workers.
     if (run_thread_.joinable()) {
         run_thread_.join();
     }
-    
-    // === STEP 4: Unblock worker threads ===
-    lineQueue_.push_blocking(ILP{"", ""});  // For worker 1
-    lineQueue_.push_blocking(ILP{"", ""});  // For worker 2
-    
-    // === STEP 5: Wait for workers to exit ===
-    if (worker1_.joinable()) {
-        worker1_.join();
+
+    for (auto& worker : workers_) {
+        if (worker.joinable()) {
+            worker.join();
+        }
     }
-    if (worker2_.joinable()) {
-        worker2_.join();
-    }
-    
-    // === STEP 6: Signal downstream (Parser) that we're done ===
-    parserQueue_.push_blocking(std::string(""));
-    
+    workers_.clear();
+
+    // No-op if a worker already closed it; covers the case where none ever ran.
+    CloseParserQueue_();
+
     Log(Name(), "All threads joined");
     return Error("");
+}
+
+void Lexer::CloseParserQueue_() {
+    bool expected = false;
+    if (downstreamClosed_.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+        parserQueue_.push_blocking(std::string(""));
+        Log(Name(), "Downstream (Parser) queue closed");
+    }
 }
 
 void Lexer::Run() {
@@ -89,7 +107,7 @@ void Lexer::Run() {
         // Open and read the file
         FILE* fp = fopen(file.c_str(), "r");
         if (!fp) {
-            std::cerr << "\n [" << Name() << "] Failed to open: " << file << std::endl;
+            LogError(Name(), "Failed to open: " + file);
             continue;
         }
         
@@ -109,13 +127,19 @@ void Lexer::Run() {
         }
         
         if (ferror(fp)) {
-            std::cerr << "\n [" << Name() << "] Read error on: " << file << std::endl;
+            LogError(Name(), "Read error on: " + file);
         }
         
         fclose(fp);
         filesProcessed++;
     }
-    
+
+    // One pill per worker: a pill is consumed by whichever worker pops it, not broadcast.
+    // Runs on both the drained path and the abort path.
+    for (int i = 0; i < KWorkerCount; ++i) {
+        lineQueue_.push_blocking(ILP{"", ""});
+    }
+
     Log(Name(), "Coordinator done. Files: " + std::to_string(filesProcessed));
 }
 
@@ -148,14 +172,21 @@ void Lexer::Worker(std::string id) {
             );
             
             // Skip empty tokens and stop words
-            if (!token.empty() && StopWords::isStopWord(token)) {
+            if (!token.empty() && !StopWords::isStopWord(token)) {
                 parserQueue_.push_blocking(token);
                 tokensProcessed++;
             }
         }
     }
-    
+
     Log(Name(), "Worker " + id + " done. Tokens: " + std::to_string(tokensProcessed));
+
+    // fetch_sub returns the value before subtracting, so seeing 1 means this thread took
+    // the count to zero and is the last worker out. Only it closes the downstream queue,
+    // and only after every worker has finished pushing (the release half of acq_rel).
+    if (activeWorkers_.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+        CloseParserQueue_();
+    }
 }
 
 std::vector<std::string> Lexer::splitLine(std::string& line) {
