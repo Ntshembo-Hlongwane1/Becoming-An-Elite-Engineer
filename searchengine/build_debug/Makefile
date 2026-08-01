@@ -116,6 +116,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named searchengine_core
+
+# Build rule for target.
+searchengine_core: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 searchengine_core
+.PHONY : searchengine_core
+
+# fast build rule for target.
+searchengine_core/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/build
+.PHONY : searchengine_core/fast
+
+#=============================================================================
 # Target rules for targets named searchengine
 
 # Build rule for target.
@@ -157,7 +170,7 @@ internal/directoryreader/directoryreader.obj: internal/directoryreader/directory
 
 # target to build an object file
 internal/directoryreader/directoryreader.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/directoryreader/directoryreader.cpp.obj
 .PHONY : internal/directoryreader/directoryreader.cpp.obj
 
 internal/directoryreader/directoryreader.i: internal/directoryreader/directoryreader.cpp.i
@@ -165,7 +178,7 @@ internal/directoryreader/directoryreader.i: internal/directoryreader/directoryre
 
 # target to preprocess a source file
 internal/directoryreader/directoryreader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/directoryreader/directoryreader.cpp.i
 .PHONY : internal/directoryreader/directoryreader.cpp.i
 
 internal/directoryreader/directoryreader.s: internal/directoryreader/directoryreader.cpp.s
@@ -173,7 +186,7 @@ internal/directoryreader/directoryreader.s: internal/directoryreader/directoryre
 
 # target to generate assembly for a file
 internal/directoryreader/directoryreader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/directoryreader/directoryreader.cpp.s
 .PHONY : internal/directoryreader/directoryreader.cpp.s
 
 internal/engine/engine.obj: internal/engine/engine.cpp.obj
@@ -181,7 +194,7 @@ internal/engine/engine.obj: internal/engine/engine.cpp.obj
 
 # target to build an object file
 internal/engine/engine.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/engine/engine.cpp.obj
 .PHONY : internal/engine/engine.cpp.obj
 
 internal/engine/engine.i: internal/engine/engine.cpp.i
@@ -189,7 +202,7 @@ internal/engine/engine.i: internal/engine/engine.cpp.i
 
 # target to preprocess a source file
 internal/engine/engine.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/engine/engine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/engine/engine.cpp.i
 .PHONY : internal/engine/engine.cpp.i
 
 internal/engine/engine.s: internal/engine/engine.cpp.s
@@ -197,7 +210,7 @@ internal/engine/engine.s: internal/engine/engine.cpp.s
 
 # target to generate assembly for a file
 internal/engine/engine.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/engine/engine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/engine/engine.cpp.s
 .PHONY : internal/engine/engine.cpp.s
 
 internal/kernal/core/error.obj: internal/kernal/core/error.cpp.obj
@@ -205,7 +218,7 @@ internal/kernal/core/error.obj: internal/kernal/core/error.cpp.obj
 
 # target to build an object file
 internal/kernal/core/error.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/error.cpp.obj
 .PHONY : internal/kernal/core/error.cpp.obj
 
 internal/kernal/core/error.i: internal/kernal/core/error.cpp.i
@@ -213,7 +226,7 @@ internal/kernal/core/error.i: internal/kernal/core/error.cpp.i
 
 # target to preprocess a source file
 internal/kernal/core/error.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/error.cpp.i
 .PHONY : internal/kernal/core/error.cpp.i
 
 internal/kernal/core/error.s: internal/kernal/core/error.cpp.s
@@ -221,7 +234,7 @@ internal/kernal/core/error.s: internal/kernal/core/error.cpp.s
 
 # target to generate assembly for a file
 internal/kernal/core/error.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/error.cpp.s
 .PHONY : internal/kernal/core/error.cpp.s
 
 internal/kernal/core/result.obj: internal/kernal/core/result.cpp.obj
@@ -229,7 +242,7 @@ internal/kernal/core/result.obj: internal/kernal/core/result.cpp.obj
 
 # target to build an object file
 internal/kernal/core/result.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/result.cpp.obj
 .PHONY : internal/kernal/core/result.cpp.obj
 
 internal/kernal/core/result.i: internal/kernal/core/result.cpp.i
@@ -237,7 +250,7 @@ internal/kernal/core/result.i: internal/kernal/core/result.cpp.i
 
 # target to preprocess a source file
 internal/kernal/core/result.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/result.cpp.i
 .PHONY : internal/kernal/core/result.cpp.i
 
 internal/kernal/core/result.s: internal/kernal/core/result.cpp.s
@@ -245,7 +258,7 @@ internal/kernal/core/result.s: internal/kernal/core/result.cpp.s
 
 # target to generate assembly for a file
 internal/kernal/core/result.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/result.cpp.s
 .PHONY : internal/kernal/core/result.cpp.s
 
 internal/kernal/core/sharedmutexs.obj: internal/kernal/core/sharedmutexs.cpp.obj
@@ -253,7 +266,7 @@ internal/kernal/core/sharedmutexs.obj: internal/kernal/core/sharedmutexs.cpp.obj
 
 # target to build an object file
 internal/kernal/core/sharedmutexs.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/sharedmutexs.cpp.obj
 .PHONY : internal/kernal/core/sharedmutexs.cpp.obj
 
 internal/kernal/core/sharedmutexs.i: internal/kernal/core/sharedmutexs.cpp.i
@@ -261,7 +274,7 @@ internal/kernal/core/sharedmutexs.i: internal/kernal/core/sharedmutexs.cpp.i
 
 # target to preprocess a source file
 internal/kernal/core/sharedmutexs.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/sharedmutexs.cpp.i
 .PHONY : internal/kernal/core/sharedmutexs.cpp.i
 
 internal/kernal/core/sharedmutexs.s: internal/kernal/core/sharedmutexs.cpp.s
@@ -269,15 +282,39 @@ internal/kernal/core/sharedmutexs.s: internal/kernal/core/sharedmutexs.cpp.s
 
 # target to generate assembly for a file
 internal/kernal/core/sharedmutexs.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/sharedmutexs.cpp.s
 .PHONY : internal/kernal/core/sharedmutexs.cpp.s
+
+internal/kernal/core/utils/stopwords.obj: internal/kernal/core/utils/stopwords.cpp.obj
+.PHONY : internal/kernal/core/utils/stopwords.obj
+
+# target to build an object file
+internal/kernal/core/utils/stopwords.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/utils/stopwords.cpp.obj
+.PHONY : internal/kernal/core/utils/stopwords.cpp.obj
+
+internal/kernal/core/utils/stopwords.i: internal/kernal/core/utils/stopwords.cpp.i
+.PHONY : internal/kernal/core/utils/stopwords.i
+
+# target to preprocess a source file
+internal/kernal/core/utils/stopwords.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/utils/stopwords.cpp.i
+.PHONY : internal/kernal/core/utils/stopwords.cpp.i
+
+internal/kernal/core/utils/stopwords.s: internal/kernal/core/utils/stopwords.cpp.s
+.PHONY : internal/kernal/core/utils/stopwords.s
+
+# target to generate assembly for a file
+internal/kernal/core/utils/stopwords.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/core/utils/stopwords.cpp.s
+.PHONY : internal/kernal/core/utils/stopwords.cpp.s
 
 internal/kernal/kernal.obj: internal/kernal/kernal.cpp.obj
 .PHONY : internal/kernal/kernal.obj
 
 # target to build an object file
 internal/kernal/kernal.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/kernal.cpp.obj
 .PHONY : internal/kernal/kernal.cpp.obj
 
 internal/kernal/kernal.i: internal/kernal/kernal.cpp.i
@@ -285,7 +322,7 @@ internal/kernal/kernal.i: internal/kernal/kernal.cpp.i
 
 # target to preprocess a source file
 internal/kernal/kernal.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/kernal.cpp.i
 .PHONY : internal/kernal/kernal.cpp.i
 
 internal/kernal/kernal.s: internal/kernal/kernal.cpp.s
@@ -293,7 +330,7 @@ internal/kernal/kernal.s: internal/kernal/kernal.cpp.s
 
 # target to generate assembly for a file
 internal/kernal/kernal.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/kernal/kernal.cpp.s
 .PHONY : internal/kernal/kernal.cpp.s
 
 internal/lexer/lexer.obj: internal/lexer/lexer.cpp.obj
@@ -301,7 +338,7 @@ internal/lexer/lexer.obj: internal/lexer/lexer.cpp.obj
 
 # target to build an object file
 internal/lexer/lexer.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/lexer/lexer.cpp.obj
 .PHONY : internal/lexer/lexer.cpp.obj
 
 internal/lexer/lexer.i: internal/lexer/lexer.cpp.i
@@ -309,7 +346,7 @@ internal/lexer/lexer.i: internal/lexer/lexer.cpp.i
 
 # target to preprocess a source file
 internal/lexer/lexer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/lexer/lexer.cpp.i
 .PHONY : internal/lexer/lexer.cpp.i
 
 internal/lexer/lexer.s: internal/lexer/lexer.cpp.s
@@ -317,7 +354,7 @@ internal/lexer/lexer.s: internal/lexer/lexer.cpp.s
 
 # target to generate assembly for a file
 internal/lexer/lexer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/lexer/lexer.cpp.s
 .PHONY : internal/lexer/lexer.cpp.s
 
 internal/parser/parser.obj: internal/parser/parser.cpp.obj
@@ -325,7 +362,7 @@ internal/parser/parser.obj: internal/parser/parser.cpp.obj
 
 # target to build an object file
 internal/parser/parser.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/parser/parser.cpp.obj
 .PHONY : internal/parser/parser.cpp.obj
 
 internal/parser/parser.i: internal/parser/parser.cpp.i
@@ -333,7 +370,7 @@ internal/parser/parser.i: internal/parser/parser.cpp.i
 
 # target to preprocess a source file
 internal/parser/parser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/parser/parser.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/parser/parser.cpp.i
 .PHONY : internal/parser/parser.cpp.i
 
 internal/parser/parser.s: internal/parser/parser.cpp.s
@@ -341,7 +378,7 @@ internal/parser/parser.s: internal/parser/parser.cpp.s
 
 # target to generate assembly for a file
 internal/parser/parser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/parser/parser.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/parser/parser.cpp.s
 .PHONY : internal/parser/parser.cpp.s
 
 internal/store/store.obj: internal/store/store.cpp.obj
@@ -349,7 +386,7 @@ internal/store/store.obj: internal/store/store.cpp.obj
 
 # target to build an object file
 internal/store/store.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/store/store.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/store/store.cpp.obj
 .PHONY : internal/store/store.cpp.obj
 
 internal/store/store.i: internal/store/store.cpp.i
@@ -357,7 +394,7 @@ internal/store/store.i: internal/store/store.cpp.i
 
 # target to preprocess a source file
 internal/store/store.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/store/store.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/store/store.cpp.i
 .PHONY : internal/store/store.cpp.i
 
 internal/store/store.s: internal/store/store.cpp.s
@@ -365,7 +402,7 @@ internal/store/store.s: internal/store/store.cpp.s
 
 # target to generate assembly for a file
 internal/store/store.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine.dir\build.make CMakeFiles/searchengine.dir/internal/store/store.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\searchengine_core.dir\build.make CMakeFiles/searchengine_core.dir/internal/store/store.cpp.s
 .PHONY : internal/store/store.cpp.s
 
 # Help Target
@@ -377,6 +414,7 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... searchengine
+	@echo ... searchengine_core
 	@echo ... cmd/main.obj
 	@echo ... cmd/main.i
 	@echo ... cmd/main.s
@@ -395,6 +433,9 @@ help:
 	@echo ... internal/kernal/core/sharedmutexs.obj
 	@echo ... internal/kernal/core/sharedmutexs.i
 	@echo ... internal/kernal/core/sharedmutexs.s
+	@echo ... internal/kernal/core/utils/stopwords.obj
+	@echo ... internal/kernal/core/utils/stopwords.i
+	@echo ... internal/kernal/core/utils/stopwords.s
 	@echo ... internal/kernal/kernal.obj
 	@echo ... internal/kernal/kernal.i
 	@echo ... internal/kernal/kernal.s

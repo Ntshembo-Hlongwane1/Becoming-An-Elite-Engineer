@@ -86,172 +86,20 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/cmd/main.cpp.s"
 	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\cmd\main.cpp" -o CMakeFiles\searchengine.dir\cmd\main.cpp.s
 
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/directoryreader/directoryreader.cpp
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj -MF CMakeFiles\searchengine.dir\internal\directoryreader\directoryreader.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\directoryreader\directoryreader.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\directoryreader\directoryreader.cpp"
-
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\directoryreader\directoryreader.cpp" > CMakeFiles\searchengine.dir\internal\directoryreader\directoryreader.cpp.i
-
-CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\directoryreader\directoryreader.cpp" -o CMakeFiles\searchengine.dir\internal\directoryreader\directoryreader.cpp.s
-
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/engine/engine.cpp
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj -MF CMakeFiles\searchengine.dir\internal\engine\engine.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\engine\engine.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\engine\engine.cpp"
-
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/engine/engine.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\engine\engine.cpp" > CMakeFiles\searchengine.dir\internal\engine\engine.cpp.i
-
-CMakeFiles/searchengine.dir/internal/engine/engine.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/engine/engine.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\engine\engine.cpp" -o CMakeFiles\searchengine.dir\internal\engine\engine.cpp.s
-
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/error.cpp
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj -MF CMakeFiles\searchengine.dir\internal\kernal\core\error.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\kernal\core\error.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\kernal\core\error.cpp"
-
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\kernal\core\error.cpp" > CMakeFiles\searchengine.dir\internal\kernal\core\error.cpp.i
-
-CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\kernal\core\error.cpp" -o CMakeFiles\searchengine.dir\internal\kernal\core\error.cpp.s
-
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/result.cpp
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj -MF CMakeFiles\searchengine.dir\internal\kernal\core\result.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\kernal\core\result.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\kernal\core\result.cpp"
-
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\kernal\core\result.cpp" > CMakeFiles\searchengine.dir\internal\kernal\core\result.cpp.i
-
-CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\kernal\core\result.cpp" -o CMakeFiles\searchengine.dir\internal\kernal\core\result.cpp.s
-
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/sharedmutexs.cpp
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj -MF CMakeFiles\searchengine.dir\internal\kernal\core\sharedmutexs.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\kernal\core\sharedmutexs.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\kernal\core\sharedmutexs.cpp"
-
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\kernal\core\sharedmutexs.cpp" > CMakeFiles\searchengine.dir\internal\kernal\core\sharedmutexs.cpp.i
-
-CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\kernal\core\sharedmutexs.cpp" -o CMakeFiles\searchengine.dir\internal\kernal\core\sharedmutexs.cpp.s
-
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/kernal/kernal.cpp
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj -MF CMakeFiles\searchengine.dir\internal\kernal\kernal.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\kernal\kernal.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\kernal\kernal.cpp"
-
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\kernal\kernal.cpp" > CMakeFiles\searchengine.dir\internal\kernal\kernal.cpp.i
-
-CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\kernal\kernal.cpp" -o CMakeFiles\searchengine.dir\internal\kernal\kernal.cpp.s
-
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/lexer/lexer.cpp
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj -MF CMakeFiles\searchengine.dir\internal\lexer\lexer.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\lexer\lexer.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\lexer\lexer.cpp"
-
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\lexer\lexer.cpp" > CMakeFiles\searchengine.dir\internal\lexer\lexer.cpp.i
-
-CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\lexer\lexer.cpp" -o CMakeFiles\searchengine.dir\internal\lexer\lexer.cpp.s
-
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/parser/parser.cpp
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj -MF CMakeFiles\searchengine.dir\internal\parser\parser.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\parser\parser.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\parser\parser.cpp"
-
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/parser/parser.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\parser\parser.cpp" > CMakeFiles\searchengine.dir\internal\parser\parser.cpp.i
-
-CMakeFiles/searchengine.dir/internal/parser/parser.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/parser/parser.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\parser\parser.cpp" -o CMakeFiles\searchengine.dir\internal\parser\parser.cpp.s
-
-CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: CMakeFiles/searchengine.dir/flags.make
-CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: CMakeFiles/searchengine.dir/includes_CXX.rsp
-CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: D:/Escape\ the\ Abstraction/searchengine/internal/store/store.cpp
-CMakeFiles/searchengine.dir/internal/store/store.cpp.obj: CMakeFiles/searchengine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/searchengine.dir/internal/store/store.cpp.obj"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/searchengine.dir/internal/store/store.cpp.obj -MF CMakeFiles\searchengine.dir\internal\store\store.cpp.obj.d -o CMakeFiles\searchengine.dir\internal\store\store.cpp.obj -c "D:\Escape the Abstraction\searchengine\internal\store\store.cpp"
-
-CMakeFiles/searchengine.dir/internal/store/store.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/searchengine.dir/internal/store/store.cpp.i"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Escape the Abstraction\searchengine\internal\store\store.cpp" > CMakeFiles\searchengine.dir\internal\store\store.cpp.i
-
-CMakeFiles/searchengine.dir/internal/store/store.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/searchengine.dir/internal/store/store.cpp.s"
-	D:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Escape the Abstraction\searchengine\internal\store\store.cpp" -o CMakeFiles\searchengine.dir\internal\store\store.cpp.s
-
 # Object files for target searchengine
 searchengine_OBJECTS = \
-"CMakeFiles/searchengine.dir/cmd/main.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj" \
-"CMakeFiles/searchengine.dir/internal/store/store.cpp.obj"
+"CMakeFiles/searchengine.dir/cmd/main.cpp.obj"
 
 # External object files for target searchengine
 searchengine_EXTERNAL_OBJECTS =
 
 searchengine.exe: CMakeFiles/searchengine.dir/cmd/main.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/directoryreader/directoryreader.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/engine/engine.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/kernal/core/error.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/kernal/core/result.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/kernal/core/sharedmutexs.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/kernal/kernal.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/lexer/lexer.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/parser/parser.cpp.obj
-searchengine.exe: CMakeFiles/searchengine.dir/internal/store/store.cpp.obj
 searchengine.exe: CMakeFiles/searchengine.dir/build.make
+searchengine.exe: libsearchengine_core.a
 searchengine.exe: CMakeFiles/searchengine.dir/linkLibs.rsp
 searchengine.exe: CMakeFiles/searchengine.dir/objects1.rsp
 searchengine.exe: CMakeFiles/searchengine.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable searchengine.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="D:\Escape the Abstraction\searchengine\build_debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable searchengine.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\searchengine.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,67 +1,47 @@
 #pragma once
+#include <string_view>
 #include <unordered_set>
 #include <string>
-#include <string_view>
+#include <cctype>
 
-class StopWords {
-public:
-    static const std::unordered_set<std::string>& get() {
-        static const std::unordered_set<std::string> instance = build();
-        return instance;
-    }
+namespace StopWords {
 
-    static bool isStopWord(std::string_view word) {
-        return get().find(std::string(word)) != get().end();
-    }
+    struct ci_hash {
+        using is_transparent = void;  
 
-private:
-    static std::unordered_set<std::string> build() {
-        return {
-            "a", "an", "the", "and", "or", "but", "for", "nor", "on", "at", "to", "by",
-            "in", "of", "off", "with", "without", "via", "per", "among", "between",
-            "above", "below", "up", "down", "over", "under", "further", "then", "now",
-            "so", "than", "that", "these", "those", "this", "thus", "hence", "according",
-            "accordingly", "across", "after", "afterwards", "again", "against",
-            "all", "almost", "alone", "along", "already", "also", "although",
-            "always", "am", "amongst", "amount", "an", "another", "any", "anyhow",
-            "anyone", "anything", "anyway", "anywhere", "are", "around", "as",
-            "at", "back", "be", "became", "because", "become", "becomes", "becoming",
-            "been", "before", "beforehand", "behind", "being", "below", "beside",
-            "besides", "between", "beyond", "both", "bottom", "but", "by", "call",
-            "can", "cannot", "can't", "co", "con", "could", "couldn't", "de", "do",
-            "does", "doesn't", "doing", "don't", "done", "down", "due", "during",
-            "each", "eight", "either", "eleven", "else", "elsewhere", "empty",
-            "enough", "even", "ever", "every", "everyone", "everything", "everywhere",
-            "except", "few", "fifteen", "fifty", "first", "five", "for", "former",
-            "formerly", "forty", "four", "from", "front", "full", "further", "get",
-            "give", "go", "had", "has", "hasn't", "have", "haven't", "having", "he",
-            "hence", "her", "here", "hereafter", "hereby", "herein", "hereupon",
-            "hers", "herself", "him", "himself", "his", "how", "however", "hundred",
-            "i", "if", "in", "indeed", "into", "is", "isn't", "it", "its", "itself",
-            "just", "keep", "last", "latter", "latterly", "least", "less", "made",
-            "make", "many", "may", "me", "meanwhile", "might", "mill", "mine",
-            "more", "moreover", "most", "mostly", "move", "much", "must", "my",
-            "myself", "name", "namely", "neither", "never", "nevertheless", "next",
-            "nine", "nobody", "none", "noone", "nor", "not", "nothing", "now",
-            "nowhere", "of", "off", "often", "on", "once", "one", "only", "onto",
-            "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out",
-            "over", "own", "part", "per", "perhaps", "please", "put", "rather",
-            "re", "same", "see", "seem", "seemed", "seeming", "seems", "serious",
-            "several", "she", "should", "shouldn't", "show", "side", "since",
-            "sincere", "six", "sixty", "so", "some", "somehow", "someone", "something",
-            "sometime", "sometimes", "somewhere", "still", "such", "take", "ten",
-            "than", "that", "the", "their", "them", "themselves", "then", "thence",
-            "there", "thereafter", "thereby", "therefore", "therein", "thereupon",
-            "these", "they", "thick", "thin", "third", "this", "those", "though",
-            "three", "through", "throughout", "thru", "thus", "to", "together",
-            "too", "top", "toward", "towards", "twelve", "twenty", "two", "un",
-            "under", "unless", "until", "up", "upon", "us", "very", "via", "was",
-            "wasn't", "we", "well", "were", "weren't", "what", "whatever", "when",
-            "whence", "whenever", "where", "whereafter", "whereas", "whereby",
-            "wherein", "whereupon", "wherever", "whether", "which", "while",
-            "whither", "who", "whoever", "whole", "whom", "whose", "why", "will",
-            "with", "within", "without", "would", "wouldn't", "yet", "you", "your",
-            "yours", "yourself", "yourselves"
-        };
-    }
-};
+        size_t operator()(std::string_view sv) const noexcept {
+            size_t h = 0;
+            for (unsigned char c : sv) {
+                c = static_cast<unsigned char>(std::tolower(c));
+                h = h * 31 + c;
+            }
+            return h;
+        }
+
+        size_t operator()(const std::string& s) const noexcept {
+            return (*this)(std::string_view(s));
+        }
+    };
+
+    // Custom equality for case‑insensitive comparison
+    struct ci_equal {
+        using is_transparent = void;
+
+        bool operator()(std::string_view lhs, std::string_view rhs) const noexcept {
+            if (lhs.size() != rhs.size()) return false;
+            for (size_t i = 0; i < lhs.size(); ++i) {
+                if (std::tolower(static_cast<unsigned char>(lhs[i])) !=
+                    std::tolower(static_cast<unsigned char>(rhs[i])))
+                    return false;
+            }
+            return true;
+        }
+
+        bool operator()(const std::string& lhs, const std::string& rhs) const noexcept {
+            return (*this)(std::string_view(lhs), std::string_view(rhs));
+        }
+    };
+
+    bool isStopWord(std::string_view word) noexcept;
+
+}

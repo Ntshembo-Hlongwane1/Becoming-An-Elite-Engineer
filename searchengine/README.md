@@ -1,79 +1,257 @@
-# C++ Search Engine
+# Escape the Abstraction
 
-A search engine built from first principles in C++.
+> A long-term engineering journey to understand computing from first principles—starting with software systems, descending through operating systems and kernels, and ultimately into firmware, embedded systems, reverse engineering, and security.
 
-## Prerequisites
+The objective isn't to recreate existing software.
 
-To build and run this project, you need a C++ compiler (`g++`) and `CMake` installed. Since this setup is configured to run entirely from the **D Drive**, ensure the following directories exist:
-* **Compiler**: `D:\mingw64\bin`
-* **CMake**: `D:\cmake\bin`
+The objective is to become the kind of engineer who can understand, build, debug, reverse engineer and secure any computing system.
 
 ---
 
-## How to Build and Run
+# Philosophy
 
-### 1. Using Git Bash (Recommended)
+Modern computing is built upon layers of abstraction.
 
-Open Git Bash and navigate to the project directory:
-```bash
-cd searchengine
-```
+Frameworks hide distributed systems.
 
-#### Update PATH (if not already permanent)
-If you haven't added the tools to your permanent path, run:
-```bash
-export PATH="/d/mingw64/bin:/d/cmake/bin:$PATH"
-```
+Distributed systems hide networking.
 
-#### Generate build files (Only needed once or after adding new files)
-```bash
-cmake -S . -B build -G "MinGW Makefiles"
-```
+Operating systems hide hardware.
 
-#### Build / Compile the project
-```bash
-cmake --build build
-```
+Hardware hides the processor.
 
-#### Run the executable
-```bash
-./build/searchengine.exe
-```
+Abstractions are incredibly useful—but they can also hide understanding.
+
+This repository intentionally peels those layers away.
+
+Every project exists to answer one question:
+
+> **How does this system actually work?**
+
+Instead of consuming technology, this repository is about engineering it.
 
 ---
 
-### 2. Using PowerShell
+# Roadmap
 
-Open PowerShell and navigate to the project directory:
-```powershell
-cd searchengine
+The journey is divided into four layers.
+
+Each layer builds the foundation for the next.
+
 ```
-
-#### Update PATH (if not already permanent)
-```powershell
-$env:Path = "D:\mingw64\bin;D:\cmake\bin;" + $env:Path
-```
-
-#### Generate build files (Only needed once or after adding new files)
-```powershell
-cmake -S . -B build -G "MinGW Makefiles"
-```
-
-#### Build / Compile the project
-```powershell
-cmake --build build
-```
-
-#### Run the executable
-```powershell
-.\build\searchengine.exe
+Competitive Programming
+          │
+          ▼
+Layer 1 ─ Systems Engineering
+          │
+          ▼
+Layer 2 ─ Reverse Engineering
+          │
+          ▼
+Layer 3 ─ Operating Systems & Kernels
+          │
+          ▼
+Layer 4 ─ Firmware & Embedded Systems
 ```
 
 ---
 
-## Project Structure
+# Competitive Programming
 
-* `cmd/main.cpp` - The main entry point for the application.
-* `CMakeLists.txt` - CMake configuration file. It will automatically detect any new `.cpp` files added under the `cmd/` or `src/` directories.
-* `src/` - Place your library code here (headers `.h`/`.hpp` and source files `.cpp`).
-* `data/` - Place your text documents or database files to search through here.
+Alongside every layer is an ongoing competitive programming journey using C++.
+
+The goal isn't only interview preparation.
+
+It is to continuously improve:
+
+- Algorithmic thinking
+- Problem solving
+- Data structures
+- Mathematical reasoning
+- Writing correct code under pressure
+
+Solutions are organised by Codeforces rating.
+
+```
+CodeForces/
+├── 800/
+├── 900/
+├── 1000/
+└── ...
+```
+
+---
+
+# Layer 1 — Systems Engineering
+
+Understanding modern backend infrastructure by rebuilding production systems.
+
+Projects include:
+
+- Search Engine
+- HTTP Server
+- Database Engine
+- Reverse Proxy & Load Balancer
+
+Focus areas:
+
+- C++
+- Networking
+- Storage Engines
+- Concurrency
+- Performance
+- Distributed Systems (MAYBE?)
+- System Design
+
+---
+
+# Layer 2 — Reverse Engineering
+
+Learning to understand software without source code.
+
+Focus areas:
+
+- Assembly
+- x86-64
+- ARM64
+- Binary Analysis
+- Debugging
+- Memory Corruption
+- Exploit Development
+- Program Analysis
+
+---
+
+# Layer 3 — Operating Systems & Kernels
+
+Understanding how software executes.
+
+Topics include:
+
+- Boot Process
+- Virtual Memory
+- Scheduling
+- Processes
+- Threads
+- System Calls
+- File Systems
+- Synchronisation
+- Kernel Development
+
+---
+
+# Layer 4 — Firmware & Embedded Systems
+
+Applying everything from the previous layers to connected devices.
+
+Projects include:
+
+- Secure Door Access Platform
+- Industrial Monitoring System
+- IoT Sensor Network
+- Building Automation
+- Embedded Security Labs
+
+Focus areas:
+
+- Embedded C
+- Firmware
+- Pico W
+- Networking
+- IoT
+- Reverse Engineering
+- Hardware Security
+
+---
+
+# Investigation Framework
+
+Alongside the engineering projects is a reusable investigation framework.
+
+Every investigation follows the same workflow:
+
+```
+Target
+    │
+Recon
+    │
+Architecture Model
+    │
+Hypothesis
+    │
+Experiment
+    │
+Evidence
+    │
+Finding
+    │
+Report
+```
+
+The framework is designed to become a long-term engineering notebook for:
+
+- Bug bounty
+- Reverse engineering
+- Vulnerability research
+- Embedded systems
+- Security assessments
+
+---
+
+# Repository Structure
+
+```
+.
+├── codeforces/
+│
+├── layer1/
+│   ├── search-engine/
+│   ├── http-server/
+│   ├── distributed-cache/
+│   ├── database-engine/
+│   ├── object-storage/
+│   └── ...
+│
+├── layer2/
+│
+├── layer3/
+│
+├── layer4/
+│
+└── README.md
+```
+
+---
+
+# Learning Principles
+
+- Build before reading production implementations.
+- Read production implementations afterwards.
+- Understand trade-offs before optimising.
+- Measure performance instead of guessing.
+- Document every important design decision.
+- Learn from failures and iterate.
+
+---
+
+# Long-Term Goal - Specialization in REVERSE ENGINEERING
+
+To develop the engineering depth required to confidently investigate, build, reverse engineer and secure systems ranging from:
+
+- Backend Infrastructure
+- Operating Systems
+- Mobile Applications
+- Desktop Software
+- Firmware
+- Embedded Devices
+- Industrial Systems
+- Automotive Systems
+- Robotics
+
+The destination isn't a specific job title.
+
+The destination is becoming an engineer capable of understanding any computing system from first principles.
+
+---
+
+> "The best engineers don't just use abstractions—they understand what lies beneath them."

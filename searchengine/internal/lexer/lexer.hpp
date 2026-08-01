@@ -39,6 +39,5 @@ private:
     void Worker(std::string id);
     void CloseParserQueue_();
 
-    std::vector<std::string> splitLine(std::string& line);
-    bool isStopWord(std::string& word, std::unordered_set<std::string>& stopWord);
+    std::vector<std::string_view> splitLine(std::string_view& line);
 };

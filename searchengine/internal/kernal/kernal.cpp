@@ -7,7 +7,7 @@
 #include "internal/kernal/core/utils/logger.hpp"
 
 namespace {
-    constexpr auto kIndexTimeout   = std::chrono::minutes(12);
+    constexpr auto kIndexTimeout   = std::chrono::minutes(20);
     constexpr auto kIndexHeartbeat = std::chrono::seconds(5);
 }
 

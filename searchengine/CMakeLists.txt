@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(searchengine LANGUAGES CXX)
 
-# Require C++17 standard for modern features
-set(CMAKE_CXX_STANDARD 17)
+# Require C++20 standard for modern features
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Use -std=c++20 rather than -std=gnu++20, so anything that only builds because
+# of a GNU extension fails here instead of on a stricter compiler later.
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Automatically find all C++ source files (.cpp) inside src/ and internal/ directories
 # This mimics Go's behavior of automatically compiling/linking all files in a folder.

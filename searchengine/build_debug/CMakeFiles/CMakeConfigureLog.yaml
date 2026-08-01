@@ -3513,3 +3513,46 @@ events:
       Running the CXX compiler's linker: "Configured with: ../configure --prefix=/R/winlibs_staging_ucrt64/inst_gcc-16.1.0/share/gcc --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-offload-targets=nvptx-none --with-pkgversion='MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r3' --with-tune=generic --enable-checking=release --enable-threads=posix --disable-sjlj-exceptions --disable-libunwind-exceptions --disable-serial-configure --disable-bootstrap --enable-host-shared --enable-plugin --disable-default-ssp --disable-rpath --disable-libstdcxx-debug --disable-version-specific-runtime-libs --disable-symvers --enable-languages=c,c++,fortran,lto,objc,obj-c++ --disable-gold --disable-nls --disable-stage1-checking --disable-win32-registry --disable-multilib --enable-ld --enable-libquadmath --enable-libada --enable-libssp --enable-libstdcxx --enable-lto --enable-fully-dynamic-string --enable-libgomp --enable-graphite --enable-mingw-wildcard --enable-libstdcxx-time --enable-libstdcxx-pch --with-mpc=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-mpfr=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-gmp=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-isl=/c/Prog/winlibs_staging_ucrt/custombuilt64 --disable-libstdcxx-backtrace --enable-install-libiberty --enable-__cxa_atexit --without-included-gettext --with-diagnostics-color=auto --enable-clocale=generic --enable-libgdiagnostics --with-libiconv --with-system-zlib --with-build-sysroot=/R/winlibs_staging_ucrt64/gcc-16.1.0/build_mingw/mingw-w64 CFLAGS='-I/c/Prog/winlibs_staging_ucrt/custombuilt64/include/libdl-win32   -march=nocona -msahf -mtune=generic -O2 -Wno-error=format' CXXFLAGS='-Wno-int-conversion  -march=nocona -msahf -mtune=generic -O2' LDFLAGS='-pthread -Wl,--no-insert-timestamp -Wl,--dynamicbase -Wl,--high-entropy-va -Wl,--nxcompat -Wl,--tsaware' LD=/c/Prog/winlibs_staging_ucrt/custombuilt64/share/binutils/bin/ld.exe" "--version"
       
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/mingw64/share/cmake-4.3/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "D:/mingw64/share/cmake-4.3/Modules/CheckCXXSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "D:/mingw64/share/cmake-4.3/Modules/FindThreads.cmake:162 (check_cxx_source_compiles)"
+      - "D:/mingw64/share/cmake-4.3/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "CMakeLists.txt:31 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7"
+      binary: "D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7'
+        
+        Run Build Command(s): D:/mingw64/bin/cmake.exe -E env VERBOSE=1 D:/mingw64/bin/mingw32-make.exe -f Makefile cmTC_afef5/fast
+        mingw32-make[1]: Entering directory 'D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7'
+        D:/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_afef5.dir\\build.make CMakeFiles/cmTC_afef5.dir/build
+        mingw32-make[2]: Entering directory 'D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7'
+        Building CXX object CMakeFiles/cmTC_afef5.dir/src.cxx.obj
+        D:\\mingw64\\bin\\c++.exe -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++20 -o CMakeFiles\\cmTC_afef5.dir\\src.cxx.obj -c "D:\\Escape the Abstraction\\searchengine\\build_debug\\CMakeFiles\\CMakeScratch\\TryCompile-3ovxu7\\src.cxx"
+        Linking CXX executable cmTC_afef5.exe
+        D:\\mingw64\\bin\\cmake.exe -E cmake_link_script CMakeFiles\\cmTC_afef5.dir\\link.txt --verbose=1
+        D:\\mingw64\\bin\\cmake.exe -E rm -f CMakeFiles\\cmTC_afef5.dir/objects.a
+        D:\\mingw64\\bin\\ar.exe qc CMakeFiles\\cmTC_afef5.dir/objects.a @CMakeFiles\\cmTC_afef5.dir\\objects1.rsp
+        D:\\mingw64\\bin\\c++.exe -Wl,--whole-archive CMakeFiles\\cmTC_afef5.dir/objects.a -Wl,--no-whole-archive -o cmTC_afef5.exe -Wl,--out-implib,libcmTC_afef5.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_afef5.dir\\linkLibs.rsp
+        mingw32-make[2]: Leaving directory 'D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7'
+        mingw32-make[1]: Leaving directory 'D:/Escape the Abstraction/searchengine/build_debug/CMakeFiles/CMakeScratch/TryCompile-3ovxu7'
+        
+      exitCode: 0
+...

@@ -5,8 +5,9 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
-#include "internal/kernal/core/utils/stopwords.hpp"
+#include "internal/kernal/core/utils/stopwords.cpp"
 #include "internal/kernal/core/utils/logger.hpp"
+#include "internal/kernal/core/headerfiles/token.hpp"
 
 std::string Lexer::Name() { return "Lexer"; }
 
@@ -123,7 +124,10 @@ void Lexer::Run() {
                 line[len - 1] = '\0';
             }
             
-            lineQueue_.push_blocking({file, std::string(line)});
+            // Both fields are copied into the queue slot. `file` is reassigned on the
+            // next pop and `line` is overwritten by the next fgets, so nothing here can
+            // be borrowed by a worker that pops later.
+            lineQueue_.push_blocking(ILP{file, std::string(line)});
         }
         
         if (ferror(fp)) {
@@ -158,25 +162,41 @@ void Lexer::Worker(std::string id) {
             break;
         }
         
-        // Tokenize and process the line
-        auto tokens = splitLine(line.line);
-        for (auto& token : tokens) {
-            // Remove punctuation and whitespace
-            token.erase(
-                std::remove_if(token.begin(), token.end(),
-                    [](unsigned char c) {
-                        return std::isspace(c) || std::ispunct(c);
-                    }
-                ),
-                token.end()
-            );
-            
-            // Skip empty tokens and stop words
-            if (!token.empty() && !StopWords::isStopWord(token)) {
-                parserQueue_.push_blocking(token);
+
+        // Viewing the owned buffer is safe here: `line` outlives every token below.
+        // (std::string::substr would return a temporary, so a view of it would dangle.)
+        const std::string_view lineView(line.line);
+
+        // Separators delimit tokens, they don't terminate them: the last word on a line
+        // has no space after it. A loop that only fires on a found space therefore drops
+        // one token per line. Treating end-of-line as a virtual separator gives every
+        // token, first and last, the same single emit path.
+        size_t start = 0;
+
+        while (start <= lineView.size()) {
+            const size_t sep  = lineView.find(' ', start);
+            const size_t stop = (sep == std::string_view::npos) ? lineView.size() : sep;
+
+            std::string_view token = lineView.substr(start, stop - start);
+
+            std::string cleanedToken;
+            cleanedToken.reserve(token.size());
+
+            for (unsigned char c : token){
+                if (!std::isspace(c) && !std::ispunct(c)){
+                    cleanedToken.push_back(std::tolower(static_cast<unsigned char>(c)));
+                }
+            }
+
+            if (!cleanedToken.empty() && !StopWords::isStopWord(cleanedToken)){
+                parserQueue_.push_blocking(cleanedToken);
                 tokensProcessed++;
             }
+
+            if (sep == std::string_view::npos) break;
+            start = sep + 1;
         }
+
     }
 
     Log(Name(), "Worker " + id + " done. Tokens: " + std::to_string(tokensProcessed));
@@ -189,16 +209,16 @@ void Lexer::Worker(std::string id) {
     }
 }
 
-std::vector<std::string> Lexer::splitLine(std::string& line) {
-    std::vector<std::string> result;
+std::vector<std::string_view> Lexer::splitLine(std::string_view& line) {
+    std::vector<std::string_view> result;
     std::size_t start = 0;
     std::size_t end = line.find(' ');
 
     while (end != std::string::npos) {
-        result.push_back(line.substr(start, end - start));
+        result.emplace_back(line.substr(start, end - start));
         start = end + 1;
         end = line.find(' ', start);
     }
-    result.push_back(line.substr(start));
+    result.emplace_back(line.substr(start));
     return result;
 }

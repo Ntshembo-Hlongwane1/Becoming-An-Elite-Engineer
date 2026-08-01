@@ -45,6 +45,16 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/type_traits \
  D:/mingw64/include/c++/16.1.0/bits/nested_exception.h \
  D:/mingw64/include/c++/16.1.0/bits/char_traits.h \
+ D:/mingw64/include/c++/16.1.0/compare \
+ D:/mingw64/include/c++/16.1.0/concepts \
+ D:/mingw64/include/c++/16.1.0/bits/stl_construct.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_iterator_base_types.h \
+ D:/mingw64/include/c++/16.1.0/bits/iterator_concepts.h \
+ D:/mingw64/include/c++/16.1.0/bits/ptr_traits.h \
+ D:/mingw64/include/c++/16.1.0/bits/ranges_cmp.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_iterator_base_funcs.h \
+ D:/mingw64/include/c++/16.1.0/bits/concept_check.h \
+ D:/mingw64/include/c++/16.1.0/debug/assertions.h \
  D:/mingw64/include/c++/16.1.0/bits/localefwd.h \
  D:/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/c++locale.h \
  D:/mingw64/include/c++/16.1.0/clocale \
@@ -86,13 +96,8 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/cpp_type_traits.h \
  D:/mingw64/include/c++/16.1.0/bits/ostream_insert.h \
  D:/mingw64/include/c++/16.1.0/bits/cxxabi_forced.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_iterator_base_funcs.h \
- D:/mingw64/include/c++/16.1.0/bits/concept_check.h \
- D:/mingw64/include/c++/16.1.0/debug/assertions.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_iterator_base_types.h \
  D:/mingw64/include/c++/16.1.0/bits/stl_iterator.h \
  D:/mingw64/include/c++/16.1.0/ext/type_traits.h \
- D:/mingw64/include/c++/16.1.0/bits/ptr_traits.h \
  D:/mingw64/include/c++/16.1.0/bits/stl_function.h \
  D:/mingw64/include/c++/16.1.0/backward/binders.h \
  D:/mingw64/include/c++/16.1.0/ext/numeric_traits.h \
@@ -103,16 +108,19 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/utility.h \
  D:/mingw64/include/c++/16.1.0/debug/debug.h \
  D:/mingw64/include/c++/16.1.0/bits/predefined_ops.h \
- D:/mingw64/include/c++/16.1.0/bit D:/mingw64/include/c++/16.1.0/concepts \
+ D:/mingw64/include/c++/16.1.0/bit \
  D:/mingw64/include/c++/16.1.0/bits/range_access.h \
  D:/mingw64/include/c++/16.1.0/initializer_list \
  D:/mingw64/include/c++/16.1.0/bits/erase_if.h \
  D:/mingw64/include/c++/16.1.0/bits/basic_string.h \
  D:/mingw64/include/c++/16.1.0/ext/alloc_traits.h \
  D:/mingw64/include/c++/16.1.0/bits/alloc_traits.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_construct.h \
  D:/mingw64/include/c++/16.1.0/string_view \
  D:/mingw64/include/c++/16.1.0/bits/functional_hash.h \
+ D:/mingw64/include/c++/16.1.0/bits/ranges_base.h \
+ D:/mingw64/include/c++/16.1.0/bits/max_size_type.h \
+ D:/mingw64/include/c++/16.1.0/numbers \
+ D:/mingw64/include/c++/16.1.0/limits \
  D:/mingw64/include/c++/16.1.0/bits/string_view.tcc \
  D:/mingw64/include/c++/16.1.0/ext/string_conversions.h \
  D:/mingw64/include/c++/16.1.0/cstdlib \
@@ -132,6 +140,7 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/uses_allocator_args.h \
  D:/mingw64/include/c++/16.1.0/tuple \
  D:/mingw64/include/c++/16.1.0/bits/invoke.h \
+ D:/mingw64/include/c++/16.1.0/bits/ranges_util.h \
  D:/mingw64/include/c++/16.1.0/bits/locale_classes.tcc \
  D:/mingw64/include/c++/16.1.0/system_error \
  D:/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/error_constants.h \
@@ -154,61 +163,94 @@ CMakeFiles/searchengine.dir/cmd/main.cpp.obj: \
  D:/mingw64/include/c++/16.1.0/bits/istream.tcc \
  D:/mingw64/include/c++/16.1.0/csignal \
  D:/mingw64/include/c++/16.1.0/thread \
- D:/mingw64/include/c++/16.1.0/bits/std_thread.h \
- D:/mingw64/include/c++/16.1.0/bits/refwrap.h \
- D:/mingw64/include/c++/16.1.0/bits/unique_ptr.h \
- D:/mingw64/include/c++/16.1.0/bits/this_thread_sleep.h \
- D:/mingw64/include/c++/16.1.0/bits/chrono.h \
- D:/mingw64/include/c++/16.1.0/ratio \
+ D:/mingw64/include/c++/16.1.0/stop_token \
+ D:/mingw64/include/c++/16.1.0/atomic \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_base.h \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_lockfree_defines.h \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_wait.h \
  D:/mingw64/include/c++/16.1.0/cstdint \
  D:/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
  D:/mingw64/x86_64-w64-mingw32/include/stdint.h \
- D:/mingw64/include/c++/16.1.0/limits D:/mingw64/include/c++/16.1.0/ctime \
+ D:/mingw64/include/c++/16.1.0/bits/std_thread.h \
+ D:/mingw64/include/c++/16.1.0/bits/refwrap.h \
+ D:/mingw64/include/c++/16.1.0/bits/unique_ptr.h \
+ D:/mingw64/include/c++/16.1.0/semaphore \
+ D:/mingw64/include/c++/16.1.0/bits/semaphore_base.h \
+ D:/mingw64/include/c++/16.1.0/bits/chrono.h \
+ D:/mingw64/include/c++/16.1.0/ratio D:/mingw64/include/c++/16.1.0/ctime \
  D:/mingw64/include/c++/16.1.0/bits/parse_numbers.h \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_timed_wait.h \
+ D:/mingw64/include/c++/16.1.0/bits/this_thread_sleep.h \
  D:/mingw64/include/c++/16.1.0/chrono \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/kernal.hpp \
- D:/mingw64/include/c++/16.1.0/map \
- D:/mingw64/include/c++/16.1.0/bits/stl_tree.h \
- D:/mingw64/include/c++/16.1.0/ext/aligned_buffer.h \
- D:/mingw64/include/c++/16.1.0/bits/node_handle.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_map.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_multimap.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_algo.h \
+ D:/mingw64/include/c++/16.1.0/bits/algorithmfwd.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_heap.h \
+ D:/mingw64/include/c++/16.1.0/bits/uniform_int_dist.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_tempbuf.h \
+ D:/mingw64/include/c++/16.1.0/sstream \
+ D:/mingw64/include/c++/16.1.0/bits/sstream.tcc \
  D:/mingw64/include/c++/16.1.0/vector \
  D:/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
  D:/mingw64/include/c++/16.1.0/bits/stl_vector.h \
  D:/mingw64/include/c++/16.1.0/bits/stl_bvector.h \
  D:/mingw64/include/c++/16.1.0/bits/vector.tcc \
- D:/mingw64/include/c++/16.1.0/memory \
- D:/mingw64/include/c++/16.1.0/bits/stl_tempbuf.h \
- D:/mingw64/include/c++/16.1.0/bits/stl_raw_storage_iter.h \
- D:/mingw64/include/c++/16.1.0/bits/align.h \
  D:/mingw64/include/c++/16.1.0/bits/shared_ptr.h \
  D:/mingw64/include/c++/16.1.0/bits/shared_ptr_base.h \
  D:/mingw64/include/c++/16.1.0/bits/allocated_ptr.h \
+ D:/mingw64/include/c++/16.1.0/ext/aligned_buffer.h \
  D:/mingw64/include/c++/16.1.0/ext/concurrence.h \
- D:/mingw64/include/c++/16.1.0/bits/shared_ptr_atomic.h \
- D:/mingw64/include/c++/16.1.0/bits/atomic_base.h \
- D:/mingw64/include/c++/16.1.0/bits/atomic_lockfree_defines.h \
- D:/mingw64/include/c++/16.1.0/backward/auto_ptr.h \
- D:/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
- D:/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/subsystem.hpp \
- D:/mingw64/include/c++/16.1.0/atomic \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/error.hpp \
- D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/utils/logger.hpp \
- D:/Escape\ the\ Abstraction/searchengine/internal/engine/engine.hpp \
- D:/Escape\ the\ Abstraction/searchengine/internal/store/store.hpp \
+ D:/mingw64/include/c++/16.1.0/bits/align.h \
+ D:/mingw64/include/c++/16.1.0/bits/chrono_io.h \
+ D:/mingw64/include/c++/16.1.0/format D:/mingw64/include/c++/16.1.0/array \
+ D:/mingw64/include/c++/16.1.0/charconv \
+ D:/mingw64/include/c++/16.1.0/locale \
+ D:/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
+ D:/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/time_members.h \
+ D:/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/messages_members.h \
+ D:/mingw64/include/c++/16.1.0/bits/codecvt.h \
+ D:/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc \
+ D:/mingw64/include/c++/16.1.0/bits/locale_conv.h \
+ D:/mingw64/include/c++/16.1.0/optional \
+ D:/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
+ D:/mingw64/include/c++/16.1.0/span \
+ D:/mingw64/include/c++/16.1.0/bits/monostate.h \
+ D:/mingw64/include/c++/16.1.0/bits/formatfwd.h \
+ D:/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
+ D:/mingw64/include/c++/16.1.0/bits/unicode.h \
+ D:/mingw64/include/c++/16.1.0/bits/unicode-data.h \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/kernal.hpp \
+ D:/mingw64/include/c++/16.1.0/functional \
+ D:/mingw64/include/c++/16.1.0/bits/std_function.h \
  D:/mingw64/include/c++/16.1.0/unordered_map \
  D:/mingw64/include/c++/16.1.0/bits/unordered_map.h \
  D:/mingw64/include/c++/16.1.0/bits/hashtable.h \
  D:/mingw64/include/c++/16.1.0/bits/hashtable_policy.h \
- D:/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
- D:/mingw64/include/c++/16.1.0/mutex \
+ D:/mingw64/include/c++/16.1.0/bits/node_handle.h \
+ D:/mingw64/include/c++/16.1.0/bits/binders.h \
+ D:/mingw64/include/c++/16.1.0/future D:/mingw64/include/c++/16.1.0/mutex \
  D:/mingw64/include/c++/16.1.0/bits/std_mutex.h \
  D:/mingw64/include/c++/16.1.0/bits/unique_lock.h \
+ D:/mingw64/include/c++/16.1.0/condition_variable \
+ D:/mingw64/include/c++/16.1.0/bits/atomic_futex.h \
+ D:/mingw64/include/c++/16.1.0/map \
+ D:/mingw64/include/c++/16.1.0/bits/stl_tree.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_map.h \
+ D:/mingw64/include/c++/16.1.0/bits/stl_multimap.h \
+ D:/mingw64/include/c++/16.1.0/memory \
+ D:/mingw64/include/c++/16.1.0/bits/stl_raw_storage_iter.h \
+ D:/mingw64/include/c++/16.1.0/bits/shared_ptr_atomic.h \
+ D:/mingw64/include/c++/16.1.0/backward/auto_ptr.h \
+ D:/mingw64/include/c++/16.1.0/bits/ranges_uninitialized.h \
+ D:/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
+ D:/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/subsystem.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/error.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/utils/logger.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/headerfiles/indexresult.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/engine/engine.hpp \
+ D:/Escape\ the\ Abstraction/searchengine/internal/store/store.hpp \
  D:/Escape\ the\ Abstraction/searchengine/internal/parser/parser.hpp \
  D:/Escape\ the\ Abstraction/searchengine/internal/kernal/core/datastructures/ringbuffer.hpp \
- D:/mingw64/include/c++/16.1.0/condition_variable \
  D:/Escape\ the\ Abstraction/searchengine/internal/directoryreader/directoryreader.hpp \
  D:/Escape\ the\ Abstraction/searchengine/internal/lexer/lexer.hpp \
  D:/Escape\ the\ Abstraction/searchengine/internal/lexer/ilp.hpp \
