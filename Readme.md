@@ -70,7 +70,6 @@ It is to continuously improve:
 - Mathematical reasoning
 - Writing correct code under pressure
 
-Solutions are organised by Codeforces rating.
 
 ```
 CodeForces/
@@ -90,10 +89,7 @@ Projects include:
 
 - Search Engine
 - HTTP Server
-- Distributed Cache
 - Database Engine
-- Object Storage
-- Message Queue
 - Reverse Proxy & Load Balancer
 
 Focus areas:
@@ -103,7 +99,7 @@ Focus areas:
 - Storage Engines
 - Concurrency
 - Performance
-- Distributed Systems
+- Distributed Systems (MAYBE?)
 - System Design
 
 ---
@@ -237,7 +233,7 @@ The framework is designed to become a long-term engineering notebook for:
 
 ---
 
-# Long-Term Goal
+# Long-Term Goal - Specialization in REVERSE ENGINEERING
 
 To develop the engineering depth required to confidently investigate, build, reverse engineer and secure systems ranging from:
 
