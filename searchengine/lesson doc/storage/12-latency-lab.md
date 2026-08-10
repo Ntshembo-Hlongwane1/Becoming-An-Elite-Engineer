@@ -185,6 +185,33 @@ std::size_t NodePage::UpperBoundBranchless(disk_key_t key) const {
 }
 ```
 
+> **What a branch misprediction actually is.** A modern x86 core has a pipeline roughly 15–20
+> stages deep and executes instructions out of order. To keep it fed it must know which
+> instruction comes next — so at every conditional branch it **predicts** the outcome and
+> speculatively executes down that path.
+>
+> When the prediction is right, the branch is effectively free. When it is wrong, the core must
+> discard every speculatively executed instruction and restart from the correct target: a
+> **pipeline flush**, costing roughly 15–20 cycles.
+>
+> The predictor is very good at patterns — loops, branches that almost always go one way,
+> even alternating sequences. Binary search is its worst case **by construction**: each probe
+> compares against the midpoint of the remaining range, so the outcome is a genuine coin flip
+> carrying one bit of information. That is the definition of unpredictable. Eight probes at
+> ~50% misprediction is roughly 4 flushes ≈ 60–80 cycles of pure waste.
+>
+> **`CMOV` (conditional move) removes the branch entirely.** Instead of jumping, the CPU
+> computes both candidate values and selects one based on a flag. There is nothing to predict
+> and nothing to flush. The trade: you always pay for both sides, so `CMOV` wins only when the
+> branch is genuinely unpredictable. For a branch that goes one way 95% of the time, the
+> predictor is nearly free and `CMOV`'s unconditional double work is a loss — which is why the
+> compiler will not do this transformation for you, and why `-O2` often turns a hand-written
+> branchless form back into a branch.
+>
+> Always check what was actually emitted:
+> `g++ -O2 -S -masm=intel | grep cmov`. If there is no `cmov`, you have written unreadable
+> code for no benefit.
+
 **What to expect.** In a microbenchmark over a hot array: 1.5–2× on the search alone. In your
 *engine*: likely invisible, because a search is ~8 probes at a few nanoseconds each against a
 descent that costs hundreds of nanoseconds or tens of microseconds.
@@ -212,6 +239,34 @@ if (Page* p = m_Pool.PeekResident(next)) {          // no pin, no I/O, just a lo
     __builtin_prefetch(p->data, 0, 3);
 }
 ```
+
+> **C++ / compiler — `__builtin_prefetch`.** A GCC/Clang intrinsic (MSVC spells it
+> `_mm_prefetch`) that emits a `PREFETCHT0`-family instruction: *"start loading this cache line
+> in the background; I will need it soon."*
+>
+> ```cpp
+> __builtin_prefetch(addr, rw, locality);
+> //                       ^   ^-- 0..3: how long to keep it. 3 = all cache levels (most sticky)
+> //                       +------ 0 = prepare to read, 1 = prepare to write
+> ```
+>
+> Three properties that make it unlike ordinary code:
+>
+> - **It is a hint, not an instruction to load.** The CPU may ignore it entirely. It never
+>   faults, never traps on a bad address, and never changes program semantics — you can pass it
+>   garbage and nothing happens.
+> - **Timing is everything.** Issue it too late and the data has not arrived; too early and it
+>   is evicted before use, having displaced something useful. The useful window is roughly the
+>   memory latency you are hiding — ~80 ns, or a few hundred instructions.
+> - **It competes for resources.** Prefetches consume memory bandwidth and cache capacity. A
+>   badly placed one is a net loss, and this is a place where "it can only help" is simply
+>   false.
+>
+> Hardware prefetchers already detect sequential and strided access automatically, so
+> **explicit prefetching only pays where the pattern is irregular but predictable by you and
+> not by the hardware** — which is exactly the pointer-chase down a tree. That is also why it
+> helps so little here: the chase is *dependent*, so there is only ever one step of lookahead
+> available, and doc 01 §1 already told you that is the fundamental limit.
 
 **What to expect.** Modest and only on cached descents. The dependent-load chain from doc 01 §1
 is the fundamental limit: you cannot prefetch the grandchild, because its address is inside the
@@ -321,7 +376,36 @@ rather than a guess.
 | Bigger pages (8K, 16K) | Reduces height *logarithmically* while raising I/O cost *linearly*. Measure before believing; 4096 usually wins. |
 | Compressing pages | Trades CPU for I/O. Only wins when I/O-bound, which a well-tuned pool means you often are not. |
 | Threading the buffer pool | Correctness cost is enormous (doc 11 §7). Exhaust single-thread wins first. |
-| `inline` everywhere | The compiler decides. `inline` is a linkage keyword, not a performance one. |
+| `inline` everywhere | The compiler decides. `inline` is a linkage keyword, not a performance one — see below. |
+
+### 8.1 Closing the `inline` question from doc 02 §1
+
+Doc 02 promised to come back to this. `inline` has two meanings, and only one of them is real.
+
+**What it means to the language:** *"this entity may be defined in multiple translation units;
+merge the definitions rather than reporting an ODR violation."* That is a **linkage** property,
+and it is the whole reason `inline constexpr` variables and header-defined functions work.
+
+**What it does not mean:** "inline this call." That was the original 1980s intent, and it has
+been dead for decades. Compilers decide inlining from their own cost model — function size,
+call frequency, whether the body is visible, register pressure — and they routinely inline
+functions never marked `inline` and decline to inline ones that are. GCC's actual heuristic
+lives behind `-finline-limit` and friends, and the keyword is not an input to it.
+
+The consequences worth acting on:
+
+- **Marking things `inline` for speed does nothing.** If you want to force it, the compiler-
+  specific `__attribute__((always_inline))` exists — and is usually a mistake, because it
+  overrides a cost model that is better informed than you are about register pressure at that
+  call site.
+- **What actually enables inlining is *visibility*.** The compiler can only inline a function
+  whose body it can see. That is why header-defined member functions get inlined and functions
+  in a separate `.cpp` do not — unless you enable **link-time optimisation** (`-flto`), which
+  lets the optimiser see across translation units. If you want inlining across your
+  `DiskManager.cpp` boundary, `-flto` is the real lever, not the keyword.
+- **More inlining is not always faster.** It grows code size, which pressures the instruction
+  cache. A 4096-frame buffer pool's hot loop competing with bloated inlined code is a real
+  regression, and it is one of the reasons `-O3` sometimes loses to `-O2`.
 
 ---
 

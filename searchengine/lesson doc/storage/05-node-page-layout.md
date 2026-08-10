@@ -440,6 +440,47 @@ form. `UpperBoundIndex` for descent, `LowerBoundIndex` for leaf slots, equal-goe
 equal-lands-on-slot. Every bug you already fixed in the in-memory version, you have now
 already fixed here.
 
+> **C++ — the reference data member, and what it costs.** `Page& m_Page;` is the first
+> reference member in the series, and it is what makes `NodePage` a **non-owning view**: the
+> class holds no storage, allocates nothing, and its lifetime is meaningless independent of the
+> page it wraps. `sizeof(NodePage)` is 8 — it is a pointer with methods.
+>
+> A reference member has three consequences the compiler enforces:
+>
+> 1. **It must be initialised in the constructor's member-initialiser list.** There is no
+>    "assign it later" — `m_Page` is bound at construction and never rebindable. That is why
+>    the constructor is `explicit NodePage(Page& page) : m_Page(page) {}` and not a body
+>    assignment.
+> 2. **Copy assignment is implicitly deleted.** You cannot rebind a reference, so the compiler
+>    cannot generate `operator=`. `NodePage a(p1); a = NodePage(p2);` does not compile. Copy
+>    *construction* still works, which is what lets `guard.AsNode()` return by value.
+> 3. **The view must not outlive the page.** Nothing checks this. If the buffer pool evicts
+>    the frame while a `NodePage` still refers to it, every accessor reads someone else's data
+>    — silently. This is exactly the danger `PageGuard` exists to eliminate in doc 08: the pin
+>    keeps the frame resident for as long as the guard lives, and `AsNode()` is only reachable
+>    through a live guard.
+>
+> The pattern generalises. `std::string_view` and `std::span` are the standard library's
+> versions of the same idea: a non-owning handle that is cheap to copy, cheap to pass by value,
+> and **dangerous to store**. The rule for all of them is the same — pass them down, never
+> hold them.
+>
+> A pointer member (`Page* m_Page`) would have been the alternative. It permits reassignment
+> and a null state, both of which we want to *forbid*: a `NodePage` viewing nothing is not a
+> meaningful object. **Use a reference when null is not a legitimate value**; use a pointer
+> when it is (as `PageGuard` does, precisely because its empty state is meaningful).
+
+> **C++ — `static` member functions.** `static std::size_t KeyOffset(std::size_t i)` is the
+> series' first static member. It has no `this` pointer, so it cannot read `m_Page` — which is
+> exactly right: the key offset depends only on the index and compile-time constants, not on
+> which page you are looking at.
+>
+> Compare `ChildOffset` and `ValueOffset`, which are **not** static — not because they need
+> `m_Page` (they don't), but because they were written as ordinary members. That is an
+> inconsistency worth noticing and fixing: making them `static` documents that they are pure
+> arithmetic and lets the compiler skip passing `this`. This is `static`'s second meaning,
+> distinct from the internal-linkage meaning in doc 03 §9.1.
+
 ---
 
 ## 7. Sizing revisited — is 8-byte keys the right call?

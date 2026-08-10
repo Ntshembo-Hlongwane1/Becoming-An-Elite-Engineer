@@ -113,6 +113,59 @@ justified where it first appears.
 
 ---
 
+## The C++ primitives, and where each is explained
+
+Every language construct is explained **once, at its first use**, and assumed thereafter. If a
+later doc uses it differently in a way that changes behaviour, the difference is called out
+there and points back here. Use this as a lookup when something reappears and you want the
+original explanation.
+
+| Construct | Explained in | The question it answers |
+|---|---|---|
+| `auto`, lambdas & capture modes | [01](01-the-cost-model.md) §6.1 | What is `[&]` capturing, and when does it dangle? |
+| templates vs `std::function` | 01 §6.1 | Why a template for the benchmark callable? |
+| forwarding reference `F&&` | 01 §6.1 | Why is this *not* an rvalue reference? |
+| defeating the optimiser | 01 §6.1 | Why does the benchmark accumulate a checksum? |
+| `#pragma once` | [02](02-the-page.md) §1 | Versus include guards; why it's faster |
+| `using` type aliases | 02 §1 | Why it gives intent but not safety |
+| **`inline constexpr`** | 02 §1 | Two keywords, two jobs — ODR, linkage, and a measured demo |
+| `std::byte`, `enum class` | 02 §2.1 | Scoping, no implicit int, fixing the underlying type |
+| **alignment, `alignas`/`alignof`** | 02 §2.3 | What alignment *is*; over-alignment; C++17 aligned `new` |
+| `static_assert` vs `assert` | 02 §2.4 | Compile-time vs runtime; the `NDEBUG` trap |
+| strict aliasing, the `memcpy` idiom | 02 §4 | Why a pointer cast is UB and `memcpy` is not |
+| what `memcpy` compiles to | 02 §4.1 | Verified assembly: one instruction |
+| **the five casts** | 02 §4.2 | `static_` vs `reinterpret_` vs `dynamic_` vs C-style |
+| type traits, the `_v` suffix | 02 §5 | What "trivially copyable" licenses you to do |
+| integer promotion & overflow | [03](03-diskmanager-io.md) §4 | Measured: which multiply overflows and which doesn't |
+| `throw`, stack unwinding | 03 §8 | Zero-cost when not thrown; why destructors can't throw |
+| `explicit` | 03 §9.1 | The file that gets opened by a conversion nobody wrote |
+| `= delete` | 03 §9.1 | Versus private; why an owning class can't be copied |
+| `const` member functions | 03 §9.1 | What it protects — and what it doesn't |
+| `static` free functions | 03 §9.1 | Internal linkage (meaning 1 of 3) |
+| `#if defined` / macros | 03 §9.1 | The branch your compiler never type-checks |
+| **struct layout & padding** | [04](04-diskmanager-allocation.md) §2 | Why `sizeof` isn't the sum of the members; `#pragma pack` |
+| generic lambdas | 04 §3 | `auto` parameters; why it compiles to nothing |
+| **reference data members** | [05](05-node-page-layout.md) §6 | Non-owning views; why `operator=` disappears |
+| `static` member functions | 05 §6 | Meaning 2 of 3 |
+| default member initialisers, `{}` | [06](06-bufferpool-core.md) §3 | One brace between a zeroed header and stack garbage |
+| `unique_ptr<T[]>` | 06 §4.1 | Why `[]` in the type, and `delete[]` vs `delete` |
+| **container invalidation rules** | 06 §4.2 | The table that decides whether a design is possible |
+| **arenas** | 06 §4.3 | What you built without naming it; bump vs pool vs slab |
+| `unordered_map`, `find`/`end` | 06 §5 | Why `map[k]` is not a lookup |
+| `std::list` and node containers | [07](07-bufferpool-eviction.md) §3 | Why it's usually wrong, and why it's right here |
+| **rvalue refs, `std::move`** | [08](08-page-guards.md) §3.1 | `std::move` moves nothing — it's a cast |
+| **rule of 0/3/5**, `= default` | 08 §3.1 | Why a destructor silently kills your move operations |
+| `noexcept` | 08 §4.4 | Why `vector` refuses to move without it |
+| **copy elision / NRVO** | [09](09-btree-descent-on-pages.md) §5 | Why `return guard;` compiles on a move-only type — and why `return std::move(g);` is worse |
+| default arguments | 09 §5 | Pointer-with-null vs reference, revisited |
+| **the unsigned reverse-loop trap** | [10](10-btree-insert-on-pages.md) §3 | Verified infinite loop that `-Wall -Wextra` does not catch |
+| sink parameters | 10 §3 | Taking ownership in a signature |
+| branch prediction, `CMOV` | [12](12-latency-lab.md) §3 | What a pipeline flush costs, and when branchless loses |
+| `__builtin_prefetch` | 12 §4 | A hint, not a load; why timing is everything |
+| **`inline` is not about speed** | 12 §8.1 | The keyword's real meaning, and `-flto` |
+
+The bolded rows are the ones that change how you write C++ generally, not just here.
+
 ## Prerequisites
 
 - **Your working `BPlusTree.hpp`** — the oracle. Do not modify it.

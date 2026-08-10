@@ -212,6 +212,44 @@ scoping, not from careful manual bookkeeping.
 for exactly as long as the caller's guard lives. This is the ownership transfer from doc 08 §6
 doing real work.
 
+> **C++ — why `return guard;` compiles on a move-only type.** `PageGuard`'s copy constructor is
+> deleted, and `return guard;` looks like a copy. It works because of two separate rules.
+>
+> **Implicit move on return.** When you return a *named local variable* by value, the compiler
+> is required to first try overload resolution treating it as an **rvalue**. The variable is
+> about to be destroyed, so treating it as expiring is safe. That selects the move constructor
+> without you writing `std::move`.
+>
+> **Copy elision (NRVO).** Beyond that, the compiler is permitted to construct `guard` directly
+> in the caller's storage, so no constructor runs at all — not even the move. For a named local
+> this is optional ("named return value optimisation"), but every mainstream compiler does it at
+> `-O1` and above. For an unnamed temporary (`return PageGuard(this, id, p);`) C++17 makes
+> elision **mandatory**.
+>
+> Two practical rules follow:
+>
+> - **Do not write `return std::move(guard);`.** It is not more efficient — it is *less*. The
+>   explicit cast produces an expression that is no longer a named local, which **disables
+>   NRVO** and forces an actual move construction. Compilers warn about this
+>   (`-Wpessimizing-move`). Return the plain name.
+> - `std::move` *is* needed when passing to a function, as in
+>   `InsertIntoLeaf(std::move(leafGuard), ...)` in doc 10 — that is an argument, not a return
+>   value, and no implicit-move rule applies there.
+>
+> The upshot: a factory returning a move-only RAII handle by value costs nothing. That is what
+> makes `FetchGuarded` a reasonable thing to call on every level of every descent.
+
+> **C++ — default arguments.** `FindLeaf(disk_key_t key, SearchPath* path = nullptr)` lets
+> `Search` call `FindLeaf(key)` while `Insert` calls `FindLeaf(key, &path)`. The default is
+> substituted **at the call site**, which has one consequence worth knowing: changing the
+> default only affects callers you recompile. In a header-only component that is fine.
+>
+> The pointer-with-null-default is doing real work here: it encodes "the path is optional
+> output". A reference could not, since there is no null reference — which is the same
+> pointer-versus-reference distinction doc 05 drew for `NodePage::m_Page`, applied in the
+> opposite direction. **Reference when the thing must exist; pointer when absence is
+> meaningful.**
+
 **Corruption is checked.** The in-memory version could not loop forever: its pointers came from
 `new`. Here, `ChildAt(i)` returns whatever four bytes are on disk. A corrupt page can point at
 its own ancestor, and without the depth cap your engine hangs instead of reporting. **Any

@@ -129,6 +129,70 @@ into a `memmove` because it cannot prove the accessor calls are simple loads and
 this shows up on a profile, doc 12 §5 replaces it with an explicit `memmove` over the raw
 bytes, which is legal precisely because §5 of doc 05 laid the keys out contiguously.
 
+> **C++ — the unsigned reverse-loop trap.** Look closely at the loop bounds:
+>
+> ```cpp
+> for (std::size_t i = n; i > index; --i)     // correct
+>     leaf.SetKeyAt(i, leaf.KeyAt(i - 1));
+> ```
+>
+> The natural way to write a reverse loop is the one that **hangs forever**:
+>
+> ```cpp
+> for (std::size_t i = n - 1; i >= index; --i)   // INFINITE LOOP when index == 0
+>     leaf.SetKeyAt(i + 1, leaf.KeyAt(i));
+> ```
+>
+> `std::size_t` is unsigned. When `i` is 0 and `index` is 0, the condition `i >= index` is true,
+> the body runs, `--i` wraps to 18,446,744,073,709,551,615, and the condition is *still* true.
+> The loop never ends, and `SetKeyAt` is being called with astronomical indices — so in a
+> release build with `assert` compiled out, it writes far outside the page before it hangs.
+>
+> Run with `n = 3, index = 0`:
+>
+> ```
+>   i=2
+>   i=1
+>   i=0
+>   i=18446744073709551615     <- wrapped; condition still true
+>   i=18446744073709551614
+>   ...                        INFINITE
+> ```
+>
+> **Compiled with `-Wall -Wextra`, this produces no warning at all.** GCC only diagnoses the
+> literal form `i >= 0`; comparing against a *variable* that happens to be zero is invisible to
+> it. You get no help from the toolchain here — only from recognising the shape.
+>
+> **An unsigned counter can never be less than zero, so any loop whose termination depends on
+> going below zero is broken.** The condition `i >= 0` is *always true* for unsigned types, and
+> compilers warn about it (`-Wtype-limits`) — but `i >= index` hides the same bug behind a
+> variable, and no warning fires.
+>
+> The fix used above is the standard one: **count from `n` down to `index + 1` exclusive, and
+> index the source with `i - 1`.** The loop variable never needs to reach zero, so it never
+> wraps. Learn this shape; you will write it constantly in code that shifts arrays.
+>
+> The alternatives, if the shape bothers you: use a signed counter (`std::ptrdiff_t`) and
+> compare `>= 0`, or iterate forward over a reversed index (`for (std::size_t k = 0; k < n -
+> index; ++k)` with `i = n - k`). All three are correct; the first is the least error-prone
+> once you recognise it.
+
+> **C++ — sink parameters.** `void InsertIntoLeaf(PageGuard leafGuard, ...)` takes the guard
+> **by value**, and callers pass `std::move(leafGuard)`. For a move-only type this is the
+> **sink parameter** idiom: the function is taking ownership, and the signature says so.
+>
+> The alternatives and why they are worse here:
+>
+> - `PageGuard&` — the caller cannot tell whether ownership transferred, and the function
+>   cannot destroy the guard early.
+> - `PageGuard&&` — works, but the parameter inside the function is an *lvalue* named
+>   `leafGuard`, so you would still need `std::move` to pass it onward. By-value is simpler and
+>   costs one move (a few pointer copies).
+>
+> Because the parameter is by value, its destructor runs at the end of the function, which is
+> what makes the pin release automatically on every path — the same guarantee doc 08 §6 gave
+> for locals, now extended across the call boundary.
+
 ---
 
 ## 4. `SplitLeaf`

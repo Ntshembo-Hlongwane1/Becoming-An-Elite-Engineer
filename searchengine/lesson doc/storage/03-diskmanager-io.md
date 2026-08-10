@@ -54,10 +54,9 @@ single fact decides the API.
 
 Two secondary benefits worth having:
 
-- **`setvbuf` lets us disable stdio's internal buffer.** We are building a buffer pool in doc
-  06 — its entire purpose is to be the cache. Letting stdio *also* buffer means every read is
-  copied twice (kernel → stdio buffer → your `Page`) and cached twice, in memory you did not
-  budget for. Turning it off removes one full 4 KB `memcpy` from every single I/O.
+- **`setvbuf` lets us pin stdio's buffering behaviour** rather than inheriting whatever the
+  platform chose. This is a defensive measure, not a speedup — §3's Trap 3 has the
+  measurements, and they are not what you would guess.
 - **It is one step closer to doc 12**, where `fread`/`fseek` become `pread`/`pwrite` and the
   `FILE*` becomes a bare descriptor.
 
@@ -82,8 +81,12 @@ DiskManager::DiskManager(const std::string& path) : m_Path(path) {
         }
     }
 
-    // Trap 3: stdio buffers by default. We are the cache. Double-buffering costs an extra
-    // 4 KB memcpy per I/O and a second copy of every hot page in memory we didn't account for.
+    // Trap 3: pin the buffering mode rather than inheriting the platform's BUFSIZ.
+    //         This does NOT remove a redundant copy -- stdio already bypasses its buffer for
+    //         reads >= the buffer size, so on this toolchain it measurably changes nothing.
+    //         It is insurance: on a platform whose default buffer is LARGER than a page, every
+    //         4 KB read would fill that whole buffer and the next fseek would discard it
+    //         unused. Measured at 3x slower. See section 3.
     std::setvbuf(m_File, nullptr, _IONBF, 0);
 }
 ```
@@ -121,19 +124,68 @@ On Linux this bug is invisible because text and binary modes are identical there
 **a Windows developer who forgets `b` sees corruption, and a Linux developer who forgets it
 ships a landmine to Windows users.** Always write `b`.
 
-### Trap 3 — `_IONBF` and the double-buffer
+### Trap 3 — `_IONBF`, and why it is *not* the speedup you would assume
 
 `setvbuf(file, nullptr, _IONBF, 0)` disables stdio's internal buffer, so `fread` becomes
 approximately a direct `read` syscall.
 
-Is this right? For this engine, yes — we cache 4 KB-aligned pages ourselves and never do small
-reads. stdio's buffer exists to amortise syscalls across many small `fgetc`-style calls; we
-have none. It would only add a copy.
+The tempting justification is "it removes a redundant copy: kernel → stdio buffer → your
+`Page`." **Measure it before believing it.** Same 4096-byte page reads, file warm in the OS
+cache so this isolates stdio's own cost:
 
-It is worth knowing the general principle, though, because it generalises far beyond here:
-**buffering is only a win at the layer that knows the access pattern.** Ours does; stdio's
-does not. Redundant buffering at multiple layers is one of the most common sources of
-invisible overhead in a system, and one of the easier wins when you go looking for latency.
+| stdio mode | random read | sequential read |
+|---|---|---|
+| default (`BUFSIZ` = 512 on MinGW/UCRT) | 4906 ns | 3073 ns |
+| **`_IONBF`** | **4910 ns** | **3068 ns** |
+| `_IOFBF`, 4 KB buffer | 4925 ns | 3114 ns |
+| `_IOFBF`, 64 KB buffer | **14940 ns** | **1864 ns** |
+
+Against the default, `_IONBF` changes **nothing**. There was no second copy to remove.
+
+**Why:** stdio has a bypass rule — when the requested read is at least as large as the buffer,
+it skips the buffer and reads straight into your destination. `BUFSIZ` here is 512 and we read
+4096, so every read already took the direct path. Row 3 confirms the mechanism: a buffer
+exactly the size of the read still bypasses.
+
+### What the 64 KB row is really telling you
+
+That row is the one worth studying, because it shows what buffering does when it actually
+engages:
+
+- **Sequential: 40% faster.** One 64 KB read serves 16 page reads — 1 syscall instead of 16.
+- **Random: 3× slower.** Every 4096-byte read triggers a 64 KB fill (16× read amplification),
+  and the following `fseek` discards the buffer unused. You paid for 60 KB you never looked at,
+  on every single read.
+
+**A buffer only pays if you reuse it, and seek-then-read never reuses it.** B+Tree descent is
+structurally that pattern: read a page, then jump somewhere unrelated. The hit rate on stdio's
+buffer is zero by construction.
+
+### So what is `_IONBF` actually buying?
+
+Not speed today. It **pins the cost model to something you chose** instead of to whatever
+`BUFSIZ` the platform happens to use.
+
+Your toolchain defaults to 512 and you land on the fast path by luck. glibc typically sizes
+stdio buffers from the filesystem's `st_blksize`; a filesystem reporting a large block would
+silently put you on the 14940 ns row — a 3× regression, no code change, different machine,
+discovered in production. One line of `setvbuf` makes that outcome impossible.
+
+Two smaller consequences: a buffer per `FILE*` is memory duplicating pages your buffer pool
+already holds, and with `_IONBF` an `fwrite` goes out immediately rather than accumulating,
+which makes doc 04 §7's ordering rules easier to reason about (the explicit `fflush` in
+`WritePage` becomes belt-and-braces rather than load-bearing).
+
+> **The general principle, correctly stated:** buffering is only a win at a layer that *knows
+> the access pattern*, and it is an active loss at a layer that guesses wrong. Ours knows;
+> stdio's cannot. The lesson is not "redundant buffering costs a copy" — measured, it often
+> costs nothing — it is that **a buffer sized for the wrong pattern causes read amplification**,
+> and that is a 3× effect rather than a 3% one.
+>
+> If you later add a bulk-load or full-scan path, the sequential column says a large buffer is
+> a genuine 40% win *there*. The answer is not to re-enable stdio buffering globally; it is a
+> separate read path that requests 64 KB explicitly. Doc 12 §4 develops this as readahead for
+> `RangeSearch`.
 
 ---
 
@@ -147,19 +199,49 @@ static std::int64_t OffsetOf(page_id_t pageId) {
 
 Three lines of thought hiding in one line of code.
 
-**Why the cast comes first.** `pageId` is `uint32_t`. `pageId * PAGE_SIZE` would compute in
-32-bit (or in `size_t`, depending on the platform's `PAGE_SIZE` type) and **overflow at page
-1,048,576 — a mere 4 GB into the file.** Widening *before* multiplying is the fix, and putting
-the widening in one named function means you cannot forget it at one of the several call sites.
+**Why the cast comes first.** This is worth doing carefully rather than by folklore, because
+the answer is *conditional* — and the condition lives in a different header.
+
+`pageId` is `uint32_t`. What type does `pageId * PAGE_SIZE` compute in? It depends entirely on
+`PAGE_SIZE`'s declared type, via the **usual arithmetic conversions**: the operands are
+converted to a common type, which is the wider of the two (with unsigned winning ties). I
+measured all three cases on this toolchain, with `pageId = 1048576` — the page at exactly 4 GB:
+
+```
+sizeof(size_t) = 8
+uint32 * size_t      -> 8 bytes, value 4294967296     correct
+uint32 * 4096 (int)  -> 4 bytes, value 0              OVERFLOW
+uint32 * uint32      -> 4 bytes, value 0              OVERFLOW
+```
+
+So doc 02 declared `inline constexpr std::size_t PAGE_SIZE`, and on a 64-bit build `size_t` is
+64 bits, so the multiplication is **already safe** — the `uint32_t` is widened to `size_t`
+before multiplying.
+
+That is not a reason to drop the cast. It is a reason to write it, because the safety is
+currently an accident of a declaration in *another file*:
+
+- Write `pageId * 4096` with a bare literal and it overflows — `4096` is `int`, so the common
+  type is `unsigned int`, 32 bits. Silently wraps to 0.
+- Change `PAGE_SIZE` to `std::uint32_t` and every offset in the engine breaks past 4 GB.
+- Compile for 32-bit and `size_t` becomes 32 bits, and it breaks there too.
+
+`static_cast<std::int64_t>(pageId) * static_cast<std::int64_t>(PAGE_SIZE)` is safe **by
+construction**, independent of what any other header says. One named function, one place to be
+right.
 
 **Why `int64_t` and not `uint64_t`.** The seek APIs take signed offsets (`off_t`, `_fseeki64`),
 because they also support seeking backwards from the end. Matching the API's type avoids an
 implicit conversion at the call boundary.
 
-> **This is the archetypal low-level bug.** It is silent, it is correct for every small test,
-> and it detonates only once your file crosses 4 GB — by which time you have real data in it.
-> The habit to build: **whenever you multiply an index by a size, ask what type the
-> multiplication happens in.** It is almost never the type you wanted.
+> **This is the archetypal low-level bug**, and note how it hides: it is silent, correct for
+> every test smaller than 4 GB, and dependent on a type declared elsewhere. The habit to build
+> is not "always cast" — it is **whenever you multiply an index by a size, know what type the
+> multiplication happens in**, and make it not depend on a decision someone could change in
+> another file.
+>
+> You can make the compiler help: `-Wconversion` warns on implicit narrowing. It is noisy on
+> most codebases, but running it once over a new low-level component is a cheap audit.
 
 ---
 
@@ -346,6 +428,25 @@ The contrast is `ReadPage` past EOF, which we *don't* throw for. That is the tes
 of normal operation?** Past-EOF: yes, during allocation. Disk failure: no. First one gets a
 defined result, second one throws.
 
+> **C++ — what `throw` actually does.** It allocates the exception object, then walks back up
+> the call stack running the destructor of every fully-constructed local object along the way
+> — **stack unwinding** — until it finds a matching `catch`. If none exists, `std::terminate`.
+>
+> Two properties worth knowing at this level:
+>
+> - **Zero cost when not thrown.** Modern implementations use table-driven unwinding: the
+>   compiler emits side tables mapping instruction ranges to cleanup actions. The *non-throwing*
+>   path has no branch, no check, no overhead at all. This is why exceptions are the right tool
+>   for genuinely exceptional conditions and the wrong tool for control flow — throwing is slow
+>   (microseconds), not throwing is free.
+> - **A destructor that throws during unwinding calls `std::terminate`.** Two exceptions in
+>   flight cannot both propagate, so the standard gives up. This is why `~DiskManager` swallows
+>   errors from `fflush`/`fclose`, and why destructors are implicitly `noexcept`.
+>
+> That unwinding guarantee — *every local object's destructor runs, on every path out* — is
+> the entire foundation of doc 08's `PageGuard`. Exceptions are what make RAII load-bearing
+> rather than merely tidy.
+
 ---
 
 ## 9. The complete files
@@ -394,6 +495,70 @@ private:
 };
 ```
 
+### 9.1 The C++ constructs in that declaration
+
+Five appear for the first time here.
+
+**`explicit DiskManager(const std::string& path)`** — blocks *implicit* conversion. Without it,
+a single-argument constructor makes the compiler willing to invent a `DiskManager` out of a
+string wherever one is expected:
+
+```cpp
+void Process(DiskManager dm);
+Process("data.db");        // without explicit: silently opens a file. With: compile error.
+```
+
+That is a file being opened, a handle allocated, and possibly a database created, from a
+conversion nobody wrote. **Mark every single-argument constructor `explicit` unless you
+specifically want the conversion.** (It also applies to multi-argument constructors called with
+braces, which is why doc 06's `BufferPool(DiskManager&, std::size_t)` takes it too.)
+
+**`DiskManager(const DiskManager&) = delete;`** — `= delete` tells the compiler "this function
+exists, and using it is an error." Naming it explicitly beats the old trick of declaring it
+private: the diagnostic says *"use of deleted function"* rather than *"is private"*, and it
+fails at overload resolution rather than at access checking, so it cannot be bypassed by a
+friend.
+
+Why delete it here: the class owns a `FILE*`. A copy would duplicate the pointer, both
+destructors would `fclose` the same handle, and the second is a double-free. **When a class
+owns a resource, copying is either meaningless or wrong — say so.** (The alternative is to
+implement it properly; doc 08 §4.1 covers when to choose which.)
+
+Deleting the copy constructor also suppresses the implicit *move* operations, which is fine
+here — a `DiskManager` has no reason to move.
+
+**`std::size_t NumPages() const;`** — the trailing `const` is part of the function's *type*
+and means "this function does not modify the object." Inside it, every member is treated as
+`const`, so the compiler enforces the promise. It also means the method can be called on a
+`const DiskManager&`, which is what makes const-correctness propagate.
+
+Note the wart flagged after the `.cpp`: `NumPages()` is declared `const` but calls `fseek`,
+mutating the file handle's position. The compiler cannot catch this — `m_File` is a `FILE*`,
+and `const` makes the *pointer* const, not the thing it points to. **`const` on a member
+function protects the object's own bytes, not anything reachable through its pointers.** That
+gap is why the doc-12 move to `pread` is a genuine improvement and not just a different
+spelling.
+
+**`static std::int64_t OffsetOf(page_id_t)`** as a free function in the `.cpp` — at file scope,
+`static` means **internal linkage**: the symbol is not visible to other translation units. Two
+benefits, one real: the linker cannot collide it with a same-named function elsewhere, and the
+compiler knows every call site, so it will inline it and often emit no function at all.
+
+This is `static`'s third distinct meaning in C++ (the others being class-level members and
+function-local persistent variables). They share a keyword and nothing else. The modern
+alternative for file-local code is an anonymous namespace, which additionally works for types.
+
+**`#if defined(_WIN32)`** — preprocessor conditionals, evaluated *before* compilation. The
+disabled branch is deleted from the source, so it is never parsed and never type-checked.
+That is the trap: a syntax error inside the Linux branch will not be caught by your Windows
+build. It compiles for you and breaks for the next person.
+
+`_WIN32` is defined by every Windows compiler, including 64-bit MinGW (the name is historical;
+it does not mean 32-bit). The `#define PORTABLE_FSEEK _fseeki64` idiom papers over an API
+difference at zero runtime cost, but macros ignore scope and namespaces — hence the loud
+`PORTABLE_` prefix. Prefer an `inline` function wrapper where the signatures allow it; here
+they do not, because the two functions genuinely differ.
+
 ```cpp
 // internal/kernal/core/storage/DiskManager.cpp
 #include "DiskManager.hpp"
@@ -419,7 +584,7 @@ DiskManager::DiskManager(const std::string& path) : m_Path(path) {
             throw std::runtime_error("DiskManager: cannot open or create " + path);
         }
     }
-    std::setvbuf(m_File, nullptr, _IONBF, 0);        // we are the cache; see doc 03 section 3
+    std::setvbuf(m_File, nullptr, _IONBF, 0);        // pin buffering mode; see doc 03 section 3
 }
 
 DiskManager::~DiskManager() {

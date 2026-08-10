@@ -37,6 +37,115 @@ using page_id_t = std::uint32_t;
 inline constexpr page_id_t INVALID_PAGE_ID = 0xFFFFFFFFu;
 ```
 
+Three C++ constructs appear here for the first time in the series. Each is explained once, at
+first use; later docs assume it.
+
+### C++ — `#pragma once`
+
+Tells the compiler "if you have already read this file, skip it." The portable alternative is
+an **include guard**:
+
+```cpp
+#ifndef SEARCHENGINE_PAGE_HPP
+#define SEARCHENGINE_PAGE_HPP
+...
+#endif
+```
+
+Both prevent the same disaster: `Page.hpp` gets `#include`d by `NodePage.hpp` *and* by
+`DiskManager.hpp`, and a file that includes both would otherwise see `struct Page` defined
+twice — a hard compile error, because a class may be defined only once per translation unit.
+
+`#pragma once` is not in the C++ standard, but every compiler you will ever use supports it
+(GCC, Clang, MSVC, ICC). It is also *faster*: the compiler recognises the file by inode/path
+and never reopens it, whereas an include guard requires reading and preprocessing the whole
+file to discover the `#ifndef` is false. It can theoretically confuse itself if the same file
+is reachable through two different paths (symlinks, hard links, or two include directories),
+which is the only reason large old codebases still use guards.
+
+### C++ — `using page_id_t = std::uint32_t;`
+
+A **type alias**. Identical to `typedef std::uint32_t page_id_t;` but reads left-to-right, and
+unlike `typedef` it can be templated. It creates **no new type** — `page_id_t` *is*
+`std::uint32_t`, and the compiler will happily let you pass a `page_id_t` where a `uint32_t`
+is expected and vice versa.
+
+That last point matters, because it is the alias's main weakness:
+
+```cpp
+page_id_t     pageId = 7;
+std::uint32_t keyCount = 3;
+ReadPage(keyCount, buf);        // compiles fine. Nothing stops you.
+```
+
+The alias buys **intent and changeability**, not safety. Intent: a reader sees `page_id_t` and
+knows it addresses a page. Changeability: widening to `uint64_t` is a one-line edit rather
+than a hunt through the codebase for which `uint32_t`s were page ids.
+
+If you want the compiler to actually *stop* the mix-up, you need a distinct type — a
+single-member struct, often called a strong typedef:
+
+```cpp
+enum class page_id_t : std::uint32_t {};   // distinct type, still 4 bytes
+```
+
+We are not doing that here: it forces explicit conversions at every arithmetic site
+(`OffsetOf` would need a cast), which is noise for a codebase this size. Know the option
+exists; reach for it when a codebase gets big enough that the mix-up becomes real.
+
+### C++ — `inline constexpr` (the one worth understanding properly)
+
+Two keywords doing two unrelated jobs. Take them apart.
+
+**`constexpr` on a variable** means *this value is computable at compile time, and I want it
+treated as a compile-time constant.* The compiler evaluates it during compilation, and the
+name can then be used where the language demands a constant expression — array bounds,
+template arguments, `static_assert`, `case` labels:
+
+```cpp
+std::byte data[PAGE_SIZE];        // needs a compile-time constant. constexpr provides it.
+```
+
+`constexpr` also implies `const`. The value cannot change at runtime, and there is normally no
+storage for it at all — uses are replaced with the literal 4096, exactly like a `#define`, but
+**type-checked and scoped**, which `#define` is not. That is the whole reason to prefer it to
+a macro.
+
+**`inline` on a variable** (a C++17 feature) is about the **One Definition Rule**, and this is
+the part that is genuinely subtle.
+
+A header is textually pasted into every `.cpp` that includes it. So `PAGE_SIZE` is *defined*
+once per translation unit. Normally that is an ODR violation — but at namespace scope, a
+`const` (and therefore `constexpr`) variable has **internal linkage** by default, meaning each
+translation unit quietly gets its own private copy. No linker error. Different objects.
+
+I verified this rather than asserting it. Two `.cpp` files each taking the address of the same
+header-declared constant:
+
+```
+PLAIN   A=0x7ff602cfb050 B=0x7ff602cfb060  same=NO   <-- two distinct objects
+INLINED A=0x7ff602cfb7a0 B=0x7ff602cfb7a0  same=YES  <-- one object
+```
+
+Why the difference matters:
+
+- **Correctness.** If an `inline` function or a template in a header takes the *address* of the
+  constant, that function now behaves differently in different translation units — a genuine
+  ODR violation, and one the linker is permitted to resolve by silently picking either. The
+  resulting bugs are exquisitely hard to find.
+- **Size.** Without `inline`, a constant that does need storage (an array, a string) is
+  duplicated in every object file.
+
+`inline constexpr` gives you: computable at compile time, usable as a constant expression,
+**and** exactly one object in the whole program if an address is ever taken.
+
+> **Note what `inline` does *not* mean here.** It has nothing to do with inlining function
+> calls. The keyword was originally a hint to the optimiser, but that meaning is long dead —
+> compilers make that decision on their own and ignore the hint. What `inline` has *actually*
+> meant, for decades, is: **"this entity may be defined in more than one translation unit;
+> merge the definitions instead of complaining."** It is a linkage keyword. Doc 12 §8 returns
+> to this when discussing what does and does not make code faster.
+
 ### Why `uint32_t` and not `uint64_t`
 
 ```
@@ -101,6 +210,30 @@ What it costs: `std::byte` doesn't implicitly convert to anything, so you'll wri
 `reinterpret_cast<char*>(page.data)` at the `fstream` boundary in doc 03. That is a feature —
 the cast is exactly where the type system hands off to a C API, and it should be visible.
 
+> **C++ — `enum class`.** `std::byte` is literally declared
+> `enum class byte : unsigned char {};` in the standard library. Worth understanding, because
+> you will declare one yourself in doc 05 (`NodeType`).
+>
+> A **scoped enumeration** differs from a plain `enum` in three ways:
+>
+> 1. **Its enumerators are scoped.** `NodeType::Leaf`, not a bare `Leaf` leaking into the
+>    surrounding namespace and colliding with everything.
+> 2. **It does not implicitly convert to `int`.** A plain `enum` decays to an integer at the
+>    slightest provocation, so `if (nodeType == 1)` compiles, and so does
+>    `if (nodeType == someUnrelatedEnum)`. A scoped enum requires an explicit
+>    `static_cast`, which is why doc 05 writes
+>    `static_cast<std::uint16_t>(NodeType::Leaf)` when serialising.
+> 3. **You can fix its underlying type** with `: unsigned char`. That controls `sizeof` —
+>    essential when the value goes into a byte-exact page layout, where "however wide the
+>    compiler felt like" is not acceptable.
+>
+> Points 2 and 3 are exactly why `std::byte` is defined this way: point 2 stops bytes being
+> treated as small integers by accident, and point 3 guarantees `sizeof(std::byte) == 1`.
+> The empty `{}` body is deliberate — there are no named values, because a byte is not a
+> choice from a list. It is a type with no operations except the ones the standard adds back
+> explicitly (`<<`, `>>`, `&`, `|`, `^`, `~`, and `std::to_integer`). Note **arithmetic is
+> absent**: you cannot add two `std::byte`s. That is the point.
+
 ### 2.2 Why a plain array and not fields
 
 The tempting version:
@@ -135,6 +268,31 @@ The separation is what lets the buffer pool be honestly generic.
 
 ### 2.3 Why `alignas(PAGE_SIZE)`
 
+> **C++ — alignment, `alignas`, `alignof`.** Every type has an **alignment requirement**: the
+> address of an object of that type must be a multiple of that number. `alignof(int)` is 4,
+> `alignof(double)` is 8, `alignof(char)` is 1.
+>
+> This is not a language nicety, it is hardware. A CPU fetches memory in fixed-size chunks. A
+> 4-byte `int` sitting at address 0x1002 straddles two of them, so the hardware must issue two
+> loads and stitch the halves together. On x86-64 that is merely slow. On some ARM
+> configurations, and for most SIMD instructions everywhere, it **faults**.
+>
+> The compiler guarantees alignment by (a) placing objects at suitable addresses and (b)
+> inserting **padding** inside structs — which is exactly the padding that makes §2.2's
+> field-based `Page` untrustworthy.
+>
+> `alignas(N)` *raises* a type's alignment to N. You cannot lower it below what the members
+> require. `alignof(T)` reads it back. Both are compile-time.
+>
+> An alignment stricter than `alignof(std::max_align_t)` — 16 on x86-64 — is called
+> **extended** or **over-alignment**, and 4096 is emphatically that. This used to be a
+> problem: plain `operator new` only promised `max_align_t`, so `new Page` could return a
+> misaligned pointer and there was no portable fix (you needed `_aligned_malloc` or
+> `posix_memalign`, and a matching non-`delete` free). **C++17 fixed it** by adding
+> `operator new(std::size_t, std::align_val_t)`, which the compiler calls automatically for
+> over-aligned types. On your C++20 toolchain `new Page` and `std::make_unique<Page>()` simply
+> work — the checkpoint at the end of this doc asserts it rather than trusting it.
+
 You do not strictly need this for `fstream`. You absolutely need it for the fast path in doc 12.
 
 Unbuffered I/O — `FILE_FLAG_NO_BUFFERING` on Windows, `O_DIRECT` on Linux — bypasses the OS
@@ -155,6 +313,33 @@ works, because the day you write a custom allocator for the buffer pool's frame 
 is the constraint you must preserve.
 
 ### 2.4 Why the `static_assert`s are not decoration
+
+> **C++ — `static_assert` vs `assert`.** Two different tools with confusingly similar names.
+>
+> | | `static_assert(cond, "msg")` | `assert(cond)` |
+> |---|---|---|
+> | Checked | at **compile** time | at **run** time |
+> | On failure | compile error, with your message | `abort()`, printing file and line |
+> | Runtime cost | **zero** — it does not exist in the binary | a branch, plus the check |
+> | Removed by | nothing; always checked | defining `NDEBUG` (release builds) |
+> | Can test | only compile-time constants | any expression |
+>
+> `static_assert` is the strictly better one when it applies, because a bug that cannot
+> compile cannot ship. The catch is that the condition must be a **constant expression** —
+> `sizeof`, `alignof`, template parameters, `constexpr` variables. It cannot check the value
+> of a runtime variable.
+>
+> The message became optional in C++17, so `static_assert(sizeof(Page) == PAGE_SIZE);` is
+> legal. Write the message anyway: the default diagnostic prints the failing expression, which
+> tells the reader *what* broke but never *why it mattered*. "Page must be exactly PAGE_SIZE
+> bytes — DiskManager's offset arithmetic assumes page N starts at N * sizeof(Page)" is the
+> difference between a five-second fix and an afternoon.
+>
+> `assert` comes from `<cassert>` and is a **macro**, which has one consequence people trip
+> on: `NDEBUG` deletes the whole expression, so anything with a side effect inside an `assert`
+> silently stops happening in release builds. Never write `assert(Initialise())`. Doc 05 uses
+> `assert` heavily for bounds checks precisely because they *are* pure, and because paying for
+> them in debug and not in release is the correct trade for a hot path.
 
 `DiskManager::ReadPage` will compute `offset = page_id * PAGE_SIZE` and then read `sizeof(Page)`
 bytes into a `Page`. Those two quantities *must* be the same number. If `sizeof(Page)` were
@@ -261,6 +446,91 @@ Two related traps, both of which will bite you in doc 05 if you don't know them 
   decision rather than an oversight. If you ever ship index files between machines, that is
   where explicit little-endian encoding goes.
 
+### 4.1 What `memcpy` actually compiles to
+
+The claim above deserves evidence rather than reassurance. Here is GCC 16 at `-O2`, compiling
+a `memcpy` out of a page:
+
+```cpp
+std::uint16_t viaMemcpy(const std::byte* p) {
+    std::uint16_t v; std::memcpy(&v, p + 16, sizeof(v)); return v;
+}
+std::uint64_t viaMemcpy64(const std::byte* p) {
+    std::uint64_t v; std::memcpy(&v, p + 23, sizeof(v)); return v;   // deliberately unaligned
+}
+```
+
+```asm
+viaMemcpy:
+        movzx   eax, WORD PTR 16[rcx]
+        ret
+viaMemcpy64:
+        mov     rax, QWORD PTR 23[rcx]
+        ret
+```
+
+**One instruction each.** No function call, no loop, no branch — and note the second one reads
+8 bytes from offset 23, which is not 8-byte aligned, and x86 handles it in a single `mov`
+anyway.
+
+`memcpy` is a **compiler intrinsic**, not really a library function. When the size is a
+compile-time constant the compiler replaces it with the best available load/store sequence;
+only for large or runtime-sized copies does it emit an actual `call`. So the "defined
+behaviour" version and the "fast" version are the same machine code, and you should never
+reach for the pointer cast to save an instruction that was never there.
+
+Run this yourself once — `g++ -O2 -S -masm=intel` — because being able to check what the
+compiler *actually did*, rather than what folklore says it does, is the core skill this series
+is trying to build.
+
+### 4.2 The five casts, and when each is correct
+
+`reinterpret_cast` appeared above as the wrong tool. Here is the whole family, since you will
+use three of them in this series.
+
+| Cast | What it does | Cost | Used here |
+|---|---|---|---|
+| `static_cast<T>` | Conversions the language already knows are meaningful: numeric widening/narrowing, derived→base, `void*`→`T*`, explicit-ctor conversions | free (or the conversion instruction) | everywhere |
+| `reinterpret_cast<T>` | "Treat these bits as a different type." No conversion, no check. | free — and that is the problem | only at C API boundaries |
+| `const_cast<T>` | Adds or removes `const` | free | never in this series |
+| `dynamic_cast<T>` | Downcast *checked at runtime* using RTTI; returns null (or throws) on mismatch | **a function call and a type-graph walk** | never |
+| `(T)x` — C-style | Tries `static`, then `const`, then `reinterpret`, silently | varies | never |
+
+The rules that matter for the code you are writing:
+
+**Prefer `static_cast`.** It only compiles when the conversion is one the language can justify.
+`static_cast<std::int64_t>(pageId)` in doc 03 is a widening conversion the compiler
+understands and checks. If you make a mistake, it refuses.
+
+**`reinterpret_cast` is a promise the compiler cannot verify.** It says "trust me" and
+generates no code. That is exactly right for
+`reinterpret_cast<char*>(page.data)` — handing bytes to a C API that wants `char*`, where
+nothing is being *converted*, only re-labelled. It is exactly wrong for
+`*reinterpret_cast<std::uint16_t*>(page.data)`, because there is no `uint16_t` object at that
+address to re-label; you are inventing one, and §4 explained why that is undefined.
+
+The distinction to carry: **re-labelling a pointer is fine; pretending an object exists is
+not.** `memcpy` is the tool for the second case because it *creates* an object of the
+destination type from a byte sequence, which is a thing the standard actually defines.
+
+**Never use the C-style cast.** Not for style points — because it silently picks
+`reinterpret_cast` when `static_cast` would have failed. It converts a compile error into
+undefined behaviour, which is the worst trade in the language. It is also ungreppable, and
+"find every dangerous cast in this codebase" is a search you will eventually want to run.
+
+**`dynamic_cast` is the one with a runtime cost**, and it is worth knowing why you avoided it
+in your in-memory tree. It walks the inheritance graph consulting RTTI to check the cast is
+valid. Your `BPlusTree.hpp` uses `static_cast<LeafNode<KeyType>*>` guarded by an `isLeaf`
+test — you had already established the type, so paying for a second check on every level of
+every lookup would be pure waste. Same reasoning, same conclusion, in `NodePage`.
+
+> C++20 added `std::bit_cast<To>(from)` for the specific case of reinterpreting an object's
+> bytes as another type of the *same size* — a `constexpr`-friendly, type-checked `memcpy`.
+> It does not fit here because our source is a byte range inside a page rather than a whole
+> object of matching size. C++23's `std::start_lifetime_as` is the principled fix for exactly
+> our case; when your toolchain has it, it replaces the `memcpy` idiom with something that
+> expresses intent better and compiles to the same nothing.
+
 ---
 
 ## 5. The complete file
@@ -305,6 +575,28 @@ static_assert(std::is_trivially_copyable_v<Page>,
 is really saying: *this type has no invariants a copy could break.* That is the formal version
 of "it's just bytes", and it is what makes `memcpy`-ing pages to and from disk defensible
 rather than reckless.
+
+> **C++ — type traits and the `_v` suffix.** `std::is_trivially_copyable<T>` is a template
+> that answers a yes/no question about a type **at compile time**. It is a struct with a
+> `static constexpr bool value`; the `_v` suffix is a C++17 shorthand variable template so you
+> write `std::is_trivially_copyable_v<Page>` instead of
+> `std::is_trivially_copyable<Page>::value`. (There is a matching `_t` suffix for traits that
+> yield a *type* rather than a value, e.g. `std::remove_const_t<T>`.)
+>
+> **Trivially copyable** has a precise meaning: the type has no user-provided copy/move
+> constructors, no user-provided assignment operators, and no non-trivial destructor. The
+> practical consequence is the one that matters here — *copying the object's bytes is
+> equivalent to copying the object*. That is precisely the licence `memcpy`, `fread`, and
+> `fwrite` require, and it is why the standard defines those functions only for such types.
+>
+> Contrast `std::string`: copying its bytes duplicates a *pointer*, so you end up with two
+> objects believing they own the same heap buffer, and two destructors that will both free it.
+> `std::is_trivially_copyable_v<std::string>` is `false`, and doc 05 §1 is the long-form
+> version of why that matters for a file format.
+>
+> The reason to assert it rather than assume it: the day someone adds a `std::string name;`
+> field to `Page` for debugging, this line fails the build with a clear message. Without it,
+> the code still compiles and starts writing pointers into your database file.
 
 ---
 

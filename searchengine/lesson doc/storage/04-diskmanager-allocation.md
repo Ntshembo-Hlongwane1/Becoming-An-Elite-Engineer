@@ -58,6 +58,45 @@ inline constexpr std::uint32_t SEDB_MAGIC   = 0x42444553u;   // 'S','E','D','B' 
 inline constexpr std::uint32_t SEDB_VERSION = 1u;
 ```
 
+> **C++ — struct layout and padding.** Doc 02 §2.2 rejected a field-based `Page` partly
+> because of padding. Here is the mechanism, because `FileHeader` is the first struct in the
+> series whose size you actually assert.
+>
+> The compiler lays members out **in declaration order**, but each member must land on an
+> address that is a multiple of its own alignment (doc 02 §2.3). To achieve that it inserts
+> anonymous **padding bytes**:
+>
+> ```cpp
+> struct Bad {          // offset  size
+>     std::uint8_t  a;  //      0     1
+>                       //      1     3   <- 3 bytes of padding, inserted silently
+>     std::uint32_t b;  //      4     4
+>     std::uint8_t  c;  //      8     1
+>                       //      9     3   <- 3 more, to make sizeof a multiple of alignof
+> };                    // sizeof(Bad) == 12, not 6
+> ```
+>
+> Two rules produce this: each member is aligned to `alignof(member)`, and the struct's total
+> size is rounded up to a multiple of the struct's own alignment (so that `Bad arr[2]` keeps
+> element 1 aligned too).
+>
+> Consequences that matter for a file format:
+>
+> - **Declaration order changes `sizeof`.** Sorting members largest-first often shrinks a
+>   struct. `FileHeader` is all `uint32_t`, so it has no padding at all — which is deliberate,
+>   not luck.
+> - **Padding bytes have indeterminate values.** `memcpy`ing a struct to disk writes whatever
+>   was in those gaps: stack garbage, possibly fragments of other data. Two headers with
+>   identical fields can differ byte-for-byte, which wrecks file diffing, and it is a genuine
+>   information-disclosure vector in software that ships files to other people.
+> - **`#pragma pack(1)`** removes padding, and is a trap. It is non-standard, and it produces
+>   *misaligned members* — so `&header.numPages` may be an unaligned `uint32_t*`, which is
+>   undefined to dereference and faults on some architectures.
+>
+> The fix is not to control padding, it is to **not depend on it** — which is exactly what §3's
+> field-by-field encoding does. The `static_assert(sizeof(FileHeader) == 32)` then guards the
+> *in-memory* struct so that adding a field is a build break rather than a silent format change.
+
 ### Why a magic number
 
 The first thing `Open` does is check it. Without that check, pointing your engine at
@@ -123,6 +162,26 @@ static FileHeader DecodeHeader(const Page& page) {
     return h;
 }
 ```
+
+> **C++ — generic lambdas.** `auto put = [&](auto v) { ... };` — the `auto` *parameter* makes
+> this a **generic lambda** (C++14). The compiler generates a templated `operator()`, so one
+> lambda handles `uint32_t` and `page_id_t` and anything else you pass, each instantiated
+> separately with `sizeof(v)` resolved at compile time.
+>
+> Without it you would need a template function, which cannot capture `off` by reference as
+> conveniently, or eight near-identical lines with the offsets written out by hand — and a
+> hand-written offset is exactly the thing that drifts when a field is inserted.
+>
+> Note `off` is captured by reference and **mutated across calls**, so the eight `put(...)`
+> calls walk forward through the page. That works because the lambda's `operator()` is
+> `const` by default but the *capture* is a reference to an external `std::size_t`, so
+> modifying it is legal. (Had you captured by value and wanted to mutate the copy, you would
+> need `[=]() mutable`.)
+>
+> The reason this compiles to nothing: the lambda is a local object with a known type, every
+> call site is visible, and each `memcpy` has a constant size. At `-O2` the whole thing becomes
+> eight stores. This is the same "template beats `std::function`" point as doc 01 §6.1 — a
+> lambda's type is unique and concrete, which is what lets the optimiser see through it.
 
 Field-by-field `memcpy`, not one `memcpy` of the whole struct. Why, when the `static_assert`
 already guarantees the size?

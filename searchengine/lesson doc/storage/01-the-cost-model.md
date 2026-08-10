@@ -333,6 +333,60 @@ hardware. It matters in the *other* direction too — that `checksum` accumulato
 optimiser cannot prove the reads are dead and delete them. Benchmarks that measure nothing
 are the most common kind.
 
+### 6.1 The C++ constructs in that harness
+
+Four things appear here for the first time in the series. Each is explained once, here.
+
+**`auto start = Clock::now();`** — the compiler deduces the type from the initialiser. The real
+type is `std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long long,
+std::ratio<1, 1000000000>>>`, which is why nobody writes it out. `auto` is not dynamic typing
+and costs nothing: the type is fixed at compile time, exactly as if you had typed it. Use it
+when the type is obvious from the right-hand side or unpleasant to name; avoid it when it hides
+something you need the reader to see (`auto n = v.size()` hides that `n` is unsigned, which is
+the bug in doc 03 §4).
+
+**`[&]{ sink.write(&byte, 1); sink.flush(); }`** — a **lambda**: an anonymous function object.
+The compiler generates an unnamed struct with an `operator()` and the captured variables as
+members. `[&]` captures everything used, **by reference**, so the lambda body reads the real
+`sink`, not a copy. `[=]` would capture by value — which for a `std::ofstream` would not even
+compile, since streams are not copyable.
+
+The reference capture carries a hazard worth internalising now: **the lambda must not outlive
+what it captured.** Storing a `[&]` lambda somewhere that survives the enclosing scope leaves
+it holding dangling references. Here it is called immediately, so it is safe.
+
+**`template <typename F> double timeIt(F&& fn, int iterations)`** — a template over the
+*callable's type*, not `std::function`. That matters for a benchmark: `std::function` is a
+type-erased wrapper that costs an indirect call the optimiser usually cannot see through, so
+you would be timing the wrapper. A template instantiates a fresh `timeIt` for each lambda, and
+the call inlines away to nothing.
+
+`F&&` in a template is a **forwarding reference** (not an rvalue reference — the `&&` means
+something different when the type is a deduced template parameter). It binds to anything,
+lvalue or rvalue, without copying. Doc 08 §4 covers `&&` in its *other* role, on move
+constructors, where it does mean rvalue reference.
+
+**`static_cast<double>(ns) / iterations`** — without it, `ns / iterations` is integer division:
+`1500 / 20000` is `0`, and your benchmark reports zero nanoseconds. The cast forces the
+division into floating point.
+
+This is the same family of bug as doc 03 §4's overflow: **an arithmetic expression whose type
+is not what you assumed.** The habit worth building is to ask, at every division and every
+multiplication, *what type is this computing in?* Doc 02 §4.2 covers the full cast family and
+why `static_cast` is the one to reach for.
+
+> **On defeating the optimiser.** `checksum += stamped;` and returning it is a *load-bearing
+> line*. Without it, the compiler can prove nothing observes the reads and delete the loop
+> entirely, and you will measure and report an empty loop. The general techniques are: consume
+> the result into something the program observably uses, mark a variable `volatile` (crude —
+> it also blocks legitimate optimisation of the surrounding code), or use a benchmark library's
+> `DoNotOptimize`. Your repo already has Google Benchmark wired up in `build_bench/`, which
+> provides exactly that.
+>
+> **Always check that your benchmark's timings scale with the work.** Halve the iteration count
+> and the total time should halve. If it does not, you are measuring nothing, and no amount of
+> careful analysis of the number will help.
+
 ---
 
 ## 7. Reading your results

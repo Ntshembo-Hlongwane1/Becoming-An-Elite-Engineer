@@ -169,6 +169,97 @@ PageGuard NewGuarded(page_id_t& outPageId) {
 
 ---
 
+## 3.1 The C++ underneath: rvalues, `std::move`, and the rule of five
+
+Four constructs first appear in that class. They are the machinery the rest of the doc assumes.
+
+### `PageGuard&&` — rvalue references
+
+`Type&` binds to an **lvalue**: something with a name and an address, that will still exist
+after this expression. `Type&&` binds to an **rvalue**: a temporary, or something you have
+explicitly said you are done with.
+
+```cpp
+PageGuard a = pool.FetchGuarded(7);   // FetchGuarded(...) returns an rvalue -- a temporary
+PageGuard b = std::move(a);           // std::move(a) makes a act like an rvalue
+```
+
+The distinction exists so a constructor can know whether its source will be used again. If the
+source is a temporary about to be destroyed, there is no point copying its contents — you can
+**steal** them and leave the source empty. That is the entire idea behind move semantics, and
+for `PageGuard` it is not an optimisation but the *only* correct behaviour, since the resource
+(a pin) cannot be duplicated at all.
+
+> Careful: `F&&` in doc 01 §6.1's `template <typename F> timeIt(F&& fn, ...)` is **not** an
+> rvalue reference. When `F` is a deduced template parameter, `F&&` is a *forwarding
+> reference* and binds to lvalues too. Same token, different rule, entirely because of
+> deduction. `PageGuard&&` on a non-template class is a true rvalue reference.
+
+### `std::move` moves nothing
+
+This is the most misleadingly named function in the standard library.
+
+```cpp
+template <typename T>
+constexpr std::remove_reference_t<T>&& move(T&& t) noexcept {
+    return static_cast<std::remove_reference_t<T>&&>(t);
+}
+```
+
+It is **a cast**. It generates no code, copies nothing, and moves nothing. All it does is change
+the *type* of the expression from lvalue to rvalue, so that overload resolution picks the move
+constructor instead of the copy constructor.
+
+Two consequences that follow directly:
+
+- **`std::move` on a type with no move constructor silently copies.** There is no error; the
+  cast succeeds and the copy overload is still the best match. For `PageGuard` the copy is
+  deleted, so you get a compile error instead — which is the good outcome.
+- **The object is not modified by `std::move` itself.** It is modified by whatever
+  constructor or assignment operator subsequently runs. `std::move(a); /* no assignment */`
+  leaves `a` completely untouched. The emptying happens in the move constructor's
+  `other.Clear()`, which is why §4.2's insistence on it is a correctness requirement rather
+  than politeness.
+
+### The rule of 0/3/5
+
+There are five special member functions the compiler will generate for you: destructor, copy
+constructor, copy assignment, move constructor, move assignment.
+
+**Rule of three** (pre-C++11): if you write any of destructor / copy ctor / copy assign, you
+almost certainly need all three — because writing one means the class manages a resource, and
+the compiler-generated versions of the others will get it wrong.
+
+**Rule of five** (C++11): add the two move operations.
+
+**Rule of zero** — the one to aim for: *design so you need none of them.* A class whose members
+are all self-managing (`std::vector`, `std::unique_ptr`, `std::string`) needs no special
+members at all; the compiler-generated ones do the right thing by delegating to the members.
+
+`PageGuard` cannot follow the rule of zero, because a buffer-pool pin is not a resource any
+standard type manages. So it declares all five: destructor, copy ctor `= delete`, copy assign
+`= delete`, move ctor, move assign. Deleting counts as declaring.
+
+There is a trap in this that costs people real time: **declaring a destructor suppresses the
+implicit move operations.** A class with a hand-written destructor and no move constructor is
+silently copy-only. If the copy is also deleted, the type becomes unusable in containers with
+an error that points nowhere near the cause. Once you write one of the five, write all five —
+even if some are `= default`.
+
+### `= default` and `PageGuard() = default;`
+
+`= default` asks the compiler for its generated implementation, explicitly. Here it produces a
+guard whose members take their default member initialisers — `m_Pool = nullptr`, `m_Page =
+nullptr` — which is precisely the empty state §4.2 requires.
+
+Why `= default` rather than an empty body `PageGuard() {}`? Because the defaulted version can
+be *trivial*, which lets the compiler skip work for arrays and value-initialisation, and it
+keeps the type's traits (`is_trivially_constructible` and friends) honest. It also states the
+intent: *"the default is correct here"*, rather than leaving a reader to check whether an empty
+body was deliberate or unfinished.
+
+---
+
 ## 4. The four subtleties
 
 ### 4.1 Why copying is deleted

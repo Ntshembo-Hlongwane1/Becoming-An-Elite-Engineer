@@ -82,6 +82,35 @@ elements are inserted or erased.** You could not do this with `std::vector` — 
 would invalidate every stored iterator. Knowing which containers offer reference stability is
 one of those small pieces of C++ knowledge that decides whether a design is possible.
 
+> **C++ — `std::list`, and why it is usually the wrong container.** A doubly-linked list of
+> individually heap-allocated nodes, each holding the value plus two pointers. That structure
+> is what gives the guarantee above: a node never moves, so anything pointing at it stays
+> valid.
+>
+> It is also why `std::list` is normally a poor default. Every element is a separate
+> allocation, elements are scattered in memory, and traversing the list is a pointer chase with
+> a cache miss per node. A `std::vector` beats it at linear scanning by an order of magnitude
+> even for insertions in the middle, because `memmove` on contiguous memory is faster than
+> chasing pointers. The usual advice — "use `list` when you insert in the middle a lot" — is
+> wrong more often than it is right.
+>
+> **Here it is the correct choice**, for the one reason lists are ever correct: we need O(1)
+> splice/erase *at a position we already hold an iterator to*, and we need that iterator to stay
+> valid. Nothing else in the standard library offers both. We never traverse the list, so its
+> cache behaviour is irrelevant — `Victim()` touches only `back()`, and `Pin` jumps straight to
+> a node via the hash map.
+>
+> Note the memory cost is real: per frame you are paying a heap node (~32 bytes with the two
+> pointers and allocator overhead) plus a hash map entry. For a 4096-frame pool that is a few
+> hundred kilobytes of bookkeeping against 16 MB of pages — acceptable. At a million frames it
+> would not be, which is one reason §7's Clock policy (one bit per frame, no list at all) is
+> what production systems actually ship.
+>
+> `m_Map.reserve(numFrames)` in the constructor pre-allocates the hash table's buckets so it
+> never rehashes during operation. The pool size is known up front, so there is no reason to
+> let the map grow incrementally — the same "hoist the allocation out of the hot path"
+> reasoning as doc 06 §4.3.
+
 ```cpp
 #pragma once
 // internal/kernal/core/storage/LRUReplacer.hpp

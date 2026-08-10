@@ -83,6 +83,27 @@ Doc 02 §3 argued for this split; here is where it pays off. `WritePage(id, fram
 exactly 4096 bytes because `Page` is exactly 4096 bytes. The bookkeeping lives beside the data,
 never inside it, and cannot leak onto the disk.
 
+> **C++ — default member initialisers.** `page_id_t pageId = INVALID_PAGE_ID;` inside the
+> struct is a **default member initialiser** (C++11). It applies to every constructor that does
+> not explicitly initialise that member, so there is one place to state the default rather than
+> one per constructor.
+>
+> This is the cheapest bug prevention in the class. Without it, `Frame` is a POD whose members
+> hold whatever was on the heap: a garbage `pinCount` makes the frame permanently unevictable,
+> a garbage `pageId` collides with a real page and `FetchPage` returns the wrong data as a
+> "hit". Both are silent.
+>
+> Note the interaction with §4.1: `std::make_unique<Frame[]>(n)` value-initialises, which runs
+> these initialisers for all N frames. Had `Frame` used `Page page;` with no initialiser and no
+> other members, `make_unique` would still zero it — but the moment you add one member with an
+> initialiser, the type stops being trivially default-constructible and the rules change. Do
+> not rely on that subtlety; **write the initialiser you need.**
+>
+> Related, and worth distinguishing: `FileHeader m_Header{};` in doc 04 uses **empty braces**,
+> which value-initialises — zeroing everything without a default member initialiser.
+> `FileHeader m_Header;` (no braces) would leave it indeterminate. One pair of braces is the
+> difference between a zeroed header and stack garbage written to page 0.
+
 ### `pinCount` — the whole safety model
 
 A pinned page **may not be evicted**. That is the entire contract, and everything in doc 07
@@ -140,6 +161,102 @@ extra steps.
 > structural rather than a comment someone deletes. When correctness depends on "nobody ever
 > calls `push_back`", pick a type with no `push_back`.
 
+### 4.1 `std::unique_ptr<T[]>` — the array form
+
+```cpp
+std::unique_ptr<Frame[]> m_Frames = std::make_unique<Frame[]>(m_PoolSize);
+```
+
+A **smart pointer**: it owns a heap allocation and frees it in its destructor. The `[]` in the
+template argument is not decoration — it selects a partial specialisation that differs in two
+ways:
+
+1. **It calls `delete[]`, not `delete`.** Mixing these is undefined behaviour, and it is a
+   real bug: `delete` on an array-new pointer runs one destructor instead of N and hands the
+   allocator the wrong size. The `[]` in the type makes it impossible to get wrong.
+2. **It provides `operator[]` and not `operator*`/`operator->`.** The API matches what an
+   array is.
+
+`std::make_unique<Frame[]>(n)` **value-initialises** all N elements — every `Frame` gets its
+default member initialisers (`pageId = INVALID_PAGE_ID`, `pinCount = 0`, `dirty = false`). That
+matters: an uninitialised `pinCount` of garbage would make a frame permanently unevictable, and
+an uninitialised `pageId` would collide with a real page. If you ever need to skip that cost,
+C++20's `std::make_unique_for_overwrite` leaves them uninitialised — do not use it here.
+
+What it buys over a raw `new Frame[n]`: the destructor, on every path including exceptions. What
+it costs: nothing. `sizeof(unique_ptr<T[]>)` is one pointer, and every operation inlines to the
+same code you would have written by hand. **This is the model for zero-overhead abstraction in
+C++, and doc 08's `PageGuard` is the same idea applied to a pin instead of a heap block.**
+
+### 4.2 Which containers can move your data under you
+
+The rule that decided this design generalises, and it is worth memorising because it silently
+governs a great deal of C++:
+
+| Container | Pointers/references to elements survive… |
+|---|---|
+| `std::vector` | …nothing that grows it. `push_back` past `capacity()` **reallocates and invalidates everything** |
+| `std::deque` | …`push_back`/`push_front` (references stay valid; *iterators* do not) |
+| `std::list` | …**everything** except erasing that element |
+| `std::unordered_map` | …**everything** except erasing that element (rehash invalidates *iterators*, not references) |
+| `std::array` / C array | …everything; it never moves |
+
+`std::vector` is the odd one out and the one people reach for by default. Its contiguity — the
+reason it is fast — is exactly what forces reallocation on growth.
+
+Two places in this series depend on a row of that table:
+
+- **Here**: `FetchPage` returns `Page*` into a frame, so frames must never move.
+- **Doc 07**: `LRUReplacer` stores `std::list::iterator`s in a hash map. That only works because
+  list iterators survive insertions and erasures of *other* elements. The same design over a
+  `vector` would be broken on the first `push_back`.
+
+**Whenever you store a pointer, reference, or iterator into a container, check that row.** It
+is one of the highest-yield habits in the language.
+
+### 4.3 Arenas — what you have just built without naming it
+
+`m_Frames` is an **arena**: one large allocation, carved into fixed-size slots, managed by your
+own free list (`m_FreeFrames`), released all at once when the pool dies.
+
+The general idea is that `new`/`delete` per object is expensive and unpredictable — a
+general-purpose allocator must search free lists, may take a lock, may fragment, and may fault
+into cold memory. An arena replaces all of it with:
+
+```
+   allocate:  pop an index off a free list        (a few instructions)
+   free:      push the index back                 (a few instructions)
+   destroy:   free the whole block, once          (one call)
+```
+
+Why this fits a buffer pool perfectly:
+
+- **All objects are the same size**, so there is no fragmentation and no size-class search.
+- **The count is fixed and known up front** — that *is* the definition of a buffer pool.
+- **Lifetimes are uniform**: every frame dies with the pool.
+- **Locality.** All 4096 frames are contiguous, so the page table's hot entries and the frames
+  they point at share TLB coverage. Scattered `new Frame` allocations would not.
+
+Variants you will meet elsewhere, all the same family:
+
+- **Bump allocator** — a pointer that only moves forward; "free" is a no-op and you reset the
+  whole arena at once. Used for per-request or per-frame allocations in servers and game
+  engines. Fastest possible allocation: one add.
+- **Pool / slab allocator** — exactly what you built: fixed-size slots plus a free list. Linux's
+  slab allocator is this idea for kernel objects.
+- **Monotonic buffer resource** — the standard library's version, `std::pmr::monotonic_buffer_resource`,
+  which lets ordinary containers allocate from an arena you supply.
+
+> **Where an arena would help in this codebase.** Doc 09's `SearchPath` uses
+> `std::vector<page_id_t>`, allocating and freeing on **every insert**. That is the classic
+> case for arena-style thinking, and doc 12 §6 measures replacing it with a fixed
+> `std::array` — which is the degenerate arena: storage with no allocator at all, on the stack.
+> The measured win there is not the allocation's *average* cost, it is its **variance**: a
+> `malloc` can take a lock or fault, and that shows up in p99.
+>
+> The general rule: **an allocation in a hot path is a latency risk, not just a cost.** When
+> the size and count are known, hoist the allocation out and hand out slots instead.
+
 Sizing: the pool is `POOL_SIZE × 4096` bytes. 1024 frames = 4 MB; 262144 frames = 1 GB. Doc 07
 §6 measures hit rate against pool size, which is the only honest way to choose.
 
@@ -186,6 +303,33 @@ Page* BufferPool::FetchPage(page_id_t pageId) {
 It is the common case — a decent pool hits 95%+ on a B+Tree workload, because the upper levels
 of the tree are touched by every single lookup. Everything on that path costs latency on every
 operation. One hash lookup, one increment, one pointer return.
+
+> **C++ — `std::unordered_map` and the `find`/`end` idiom.** A hash table: **O(1) average**
+> lookup, O(n) worst case if every key collides. The ordered `std::map` is a red-black tree at
+> O(log n) and would be the wrong choice here — we never iterate the page table in key order,
+> so we would be paying for a guarantee we do not use.
+>
+> ```cpp
+> auto it = m_PageTable.find(pageId);
+> if (it != m_PageTable.end()) { ... it->second ... }
+> ```
+>
+> `find` returns an **iterator**, and `end()` is the one-past-the-last sentinel meaning "not
+> found". `it->first` is the key, `it->second` the value — the element is a `std::pair`.
+>
+> Two mistakes to avoid, both of which look harmless:
+>
+> - **`m_PageTable[pageId]`** on a missing key **inserts** a default-constructed value and
+>   returns a reference to it. It is not a lookup; it is a lookup-or-create, and it cannot be
+>   used on a `const` map. Using it to test membership silently grows your page table with
+>   bogus frame indices — pointing at frame 0.
+> - **`count(k)` then `[k]`** hashes the key twice. `find` once and reuse the iterator.
+>
+> One caveat that matters given §4.2: **rehashing invalidates iterators but not references or
+> pointers to elements.** So caching an iterator across an insert is unsafe; caching a
+> `Frame*` is fine — but note we store frame *indices*, not pointers, which sidesteps the
+> question entirely. Indices into a fixed array are the most robust handle available: they
+> survive anything the container does.
 
 ### Why `pinCount = 1` and not `++` on the miss path
 
