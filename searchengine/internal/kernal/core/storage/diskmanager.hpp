@@ -19,10 +19,18 @@ class DiskManager {
         page_id_t AllocatePage();
         void DeallocatePage(page_id_t id);
 
+        
+        void SetRootPageId(page_id_t rootPageId);
+        bool ValidateFreeList() const;
+
         std::size_t NumPages() const;
         const std::string& Path() const {
            return  m_Path;
         };
+
+        std::uint32_t FreePageCount() const { 
+            return m_Header.numFreePages; 
+        }
 
         std::uint64_t ReadCount() const {
             return m_Reads;
@@ -36,10 +44,12 @@ class DiskManager {
             static std::int64_t OffsetOf(page_id_t pageId);
             int Seek(std::int64_t offset);
 
+            void LoadOrInitHeader();
+            void FlushHeader();
             std::string m_Path;
             std::FILE* m_File;
             std::uint64_t m_Reads = 0;
             std::uint64_t m_Writes = 0;
-            FileHeader m_Header;
+            FileHeader m_Header{};
             bool m_HeaderDirty = false;
 };

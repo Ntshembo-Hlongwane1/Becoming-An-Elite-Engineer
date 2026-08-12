@@ -1,33 +1,33 @@
 #include <iostream>
+#include <string>
 
-int main(){
-    std::string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    std::cout << "LEtter size" << (letters.size()) << std::endl;
+int main() {
     int n;
     std::string word;
-    std::cin >> n;
-    std::cin >> word;
 
+    std::cin >> n >> word;
 
-    if (n < 26){
-        std::cout << "NO" << std::endl;
+    if (n < 26) {
+        std::cout << "NO\n";
         return 0;
     }
 
-    for (size_t i = 0; i < word.size(); i++){
-        if (letters.find(word[i]) != std::string::npos){
-            std::cout << "Condition hit: " << std::endl;
-            letters.erase(i, 1);
+    bool seen[26] = {};
+
+    for (char c : word) {
+        if (c >= 'A' && c <= 'Z') {
+            c = c - 'A' + 'a';
+        }
+
+        seen[c - 'a'] = true;
+    }
+
+    for (int i = 0; i < 26; i++) {
+        if (!seen[i]) {
+            std::cout << "NO\n";
+            return 0;
         }
     }
 
-    std::cout << "Remaining: " << (letters.size()) << std::endl;
-    if (letters.size() <= 26){
-        std::cout << "YES" << std::endl;
-    }else{
-        std::cout << "NO" << std::endl;
-    }
-
-    return 0;
+    std::cout << "YES\n";
 }

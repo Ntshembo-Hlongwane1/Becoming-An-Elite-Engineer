@@ -89,6 +89,7 @@ void DiskManager::WritePage(page_id_t pageId, const Page& in) {
 }
 
 void DiskManager::Sync() {
+    FlushHeader();
     std::fflush(m_File);
 
     #if defined(_WIN32)
@@ -134,4 +135,74 @@ page_id_t DiskManager::AllocatePage() {
         WritePage(id, page);
         return id;
     }
+}
+
+void DiskManager::DeallocatePage(page_id_t id) {
+    if (id == HEADER_PAGE_ID || id == INVALID_PAGE_ID || id >= m_Header.pageCount) {
+        throw std::runtime_error("DeallocatePage: refusing to free page " + std::to_string(id));
+    }
+
+    Page page;
+    std::memset(page.data, 0, PAGE_SIZE);
+    std::memcpy(page.data, &m_Header.freeListHead, sizeof(page_id_t));
+    WritePage(id, page);
+
+    m_Header.freeListHead = id;
+    ++m_Header.numFreePages;
+    m_HeaderDirty = true;
+}
+
+void DiskManager::LoadOrInitHeader() {
+    if (NumPages() == 0) {
+        // Brand new file. Build a header describing a file with exactly one page: itself.
+        m_Header.magic        = SEDB_MAGIC;
+        m_Header.version      = SEDB_VERSION;
+        m_Header.pageSize     = static_cast<std::uint32_t>(PAGE_SIZE);
+        m_Header.pageCount    = 1;                  // page 0 exists and is this header
+        m_Header.freeListHead = INVALID_PAGE_ID;
+        m_Header.rootPageId   = INVALID_PAGE_ID;    // no tree yet
+        m_Header.numFreePages = 0;
+        m_Header.reserved     = 0;
+
+        m_HeaderDirty = true;
+        FlushHeader();
+        Sync();          // a half-created file with no valid header is unopenable; pay 5 ms once
+        return;
+    }
+
+    Page p;
+    ReadPage(HEADER_PAGE_ID, p);
+    m_Header = DecodeHeader(p);
+
+    if (m_Header.magic != SEDB_MAGIC) {
+        throw std::runtime_error("not a searchengine database file: " + m_Path);
+    }
+    if (m_Header.version > SEDB_VERSION) {
+        throw std::runtime_error("file was written by a newer version ("+ std::to_string(m_Header.version) + ")");
+    }
+    if (m_Header.pageSize != PAGE_SIZE) {
+        throw std::runtime_error("file uses page size " + std::to_string(m_Header.pageSize)+ ", this build uses " + std::to_string(PAGE_SIZE));
+    }
+
+    // numPages is a CACHE of a fact the filesystem already knows. If they disagree, the
+    // filesystem is right -- it survived whatever crash we didn't.
+    const std::size_t actual = NumPages();
+    if (m_Header.pageCount > actual) {
+        m_Header.pageCount = static_cast<std::uint32_t>(actual);
+        m_HeaderDirty = true;
+    }
+}
+
+void DiskManager::FlushHeader() {
+    if (!m_HeaderDirty) return;
+    Page p;
+    EncodeHeader(m_Header, p);
+    WritePage(HEADER_PAGE_ID, p);
+    m_HeaderDirty = false;
+}
+
+void DiskManager::SetRootPageId(page_id_t id) {
+    m_Header.rootPageId = id;
+    m_HeaderDirty = true;
+    FlushHeader();        // fatal-if-lost: write it through immediately
 }
