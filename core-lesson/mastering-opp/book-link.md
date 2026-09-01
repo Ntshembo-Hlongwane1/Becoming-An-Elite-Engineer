@@ -1,0 +1,1 @@
+chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://simplifycpp.org/read/book.php?id=17119
