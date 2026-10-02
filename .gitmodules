@@ -1,0 +1,9 @@
+[submodule "unix-network-programming-vol1-edition3/unpv13e"]
+	path = unix-network-programming-vol1-edition3/unpv13e
+	url = https://github.com/unpbook/unpv13e.git
+[submodule "objectstorage/Crow"]
+	path = objectstorage/Crow
+	url = https://github.com/CrowCpp/Crow.git
+[submodule "objectstorage/asio"]
+	path = objectstorage/asio
+	url = https://github.com/chriskohlhoff/asio.git
