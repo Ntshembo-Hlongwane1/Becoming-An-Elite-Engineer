@@ -1,31 +1,46 @@
 #!/bin/bash
 
 # Codeforces Runner
-# Usage: bash run.sh <problem_code>
-# Example: bash run.sh 71A
+# Usage: ./run.sh <problem_code>
+# Example: ./run.sh 750A
+#          ./run.sh 750A < input.txt
 
 if [ -z "$1" ]; then
-    echo "Usage: bash run.sh <problem_code>"
-    echo "Example: bash run.sh 71A"
+    echo "Usage: ./run.sh <problem_code>"
+    echo "Example: ./run.sh 750A"
     exit 1
 fi
 
-CODE="$1"
+CODE="${1%/}"  # allow tab-completed "750A/"
 SRC_DIR="$(dirname "$0")/${CODE}"
-SRC_FILE="${SRC_DIR}/${CODE}.cpp"
+
+if [ ! -d "$SRC_DIR" ]; then
+    echo "Error: folder $SRC_DIR not found!"
+    exit 1
+fi
+
+# Find the source file (either .cpp or .cc)
+SRC_FILE=""
+for ext in cpp cc; do
+    if [ -f "${SRC_DIR}/${CODE}.${ext}" ]; then
+        SRC_FILE="${SRC_DIR}/${CODE}.${ext}"
+        break
+    fi
+done
+
+if [ -z "$SRC_FILE" ]; then
+    echo "Error: no ${CODE}.cpp or ${CODE}.cc in $SRC_DIR"
+    exit 1
+fi
+
 EXE_FILE="${SRC_DIR}/${CODE}.exe"
 
-# Check if source file exists
-if [ ! -f "$SRC_FILE" ]; then
-    echo "Error: $SRC_FILE not found!"
-    exit 1
-fi
+# Always a fresh build: never reuse an old binary or any compiler cache
+rm -f "$EXE_FILE"
+export CCACHE_DISABLE=1
 
-# Compile
-echo "Compiling ${CODE}.cpp..."
-g++ -std=c++17 -O2 -Wall -o "$EXE_FILE" "$SRC_FILE"
-
-if [ $? -ne 0 ]; then
+echo "Compiling $(basename "$SRC_FILE") (fresh build)..."
+if ! /usr/bin/g++ -std=c++20 -O2 -Wall -Wextra -o "$EXE_FILE" "$SRC_FILE"; then
     echo "Compilation failed!"
     exit 1
 fi

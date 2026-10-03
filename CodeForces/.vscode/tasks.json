@@ -7,13 +7,13 @@
             "command": "g++",
             "args": [
                 "-g",
-                "-std=c++17",
+                "-std=c++20",
                 "-O2",
                 "-Wall",
                 "-Wextra",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}/${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"

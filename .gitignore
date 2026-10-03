@@ -3,3 +3,9 @@ build/
 *.exe
 *.o
 *.obj
+
+# Compiled binaries in the UNP programs/ dirs (same name as the .c, no extension)
+unix-network-programming-vol1-edition3/programs/*
+!unix-network-programming-vol1-edition3/programs/*.c
+!unix-network-programming-vol1-edition3/programs/*.h
+!unix-network-programming-vol1-edition3/programs/Makefile
