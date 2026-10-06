@@ -12,6 +12,38 @@
 #include "internal/kernal/core/include/types/storage-error.hpp"
 #include <boost/uuid/time_generator_v7.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <array>
+#include <cstdlib>
+#include <string_view>
+
+// Decode the 64-char hex OBJSTORE_SERVER_KEY env var into 32 raw bytes; fail fast if missing/malformed
+// Generate once with: openssl rand -hex 32
+std::array<unsigned char, 32> LoadServerKey() {
+    const char* env = std::getenv("OBJSTORE_SERVER_KEY");
+    if (!env || std::string_view(env).size() != 64) {
+        throw std::runtime_error("OBJSTORE_SERVER_KEY must be 64 hex chars (openssl rand -hex 32)");
+    }
+
+    // Strict nibble decode: rejects anything that isn't [0-9a-fA-F]
+    auto nibble = [](char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        return -1;
+    };
+
+    std::array<unsigned char, 32> key{};
+    for (size_t i = 0; i < key.size(); ++i) {
+        const int hi = nibble(env[2 * i]);
+        const int lo = nibble(env[2 * i + 1]);
+        if (hi < 0 || lo < 0) {
+            throw std::runtime_error("OBJSTORE_SERVER_KEY contains non-hex characters");
+        }
+        key[i] = static_cast<unsigned char>((hi << 4) | lo);
+    }
+
+    return key;
+}
 
 struct User {
     std::string email;
@@ -57,7 +89,9 @@ int main(){
 
     //TEMP WILL BE REPLACED WITH DB;
     std::unordered_map<UploadSessionKey, UID> uploadSessions;
-
+    std::unordered_map<UploadSessionKey, ObjectId> sessionObjects;
+    const auto serverKey = LoadServerKey();
+    
     crow::SimpleApp app;
 
     DiskManager dm{"data"};
@@ -77,7 +111,7 @@ int main(){
         return "ALive";
     });
 
-    CROW_ROUTE(app, "/upload").methods("POST"_method)([&uploadSessions](const crow::request& request){
+    CROW_ROUTE(app, "/upload").methods("POST"_method)([&uploadSessions, &sessionObjects, &serverKey](const crow::request& request){
 
         try{
             auto body = crow::json::load(request.body);
@@ -92,11 +126,16 @@ int main(){
             UID uid  = body["uid"].s();
             // Generator holds per-instance state (last ms + counter), so one per Crow worker thread
             thread_local boost::uuids::time_generator_v7 uuidGen;
-            UploadSessionKey key = boost::uuids::to_string(uuidGen());
+            boost::uuids::uuid session = uuidGen();
+            UploadSessionKey key = boost::uuids::to_string(session);
+
+            // Deterministic ObjectId derived from the session, stored at mint time
+            ObjectId oid = utility::crypto::make_object_id(serverKey, session);
 
             res["upload_session"] = key;
 
             uploadSessions.try_emplace(key, uid);
+            sessionObjects.try_emplace(key, oid);
 
             return crow::response(200, res);
         }catch(const std::exception& e){
@@ -108,8 +147,8 @@ int main(){
 
     CROW_ROUTE(app, "/upload/<string>/chunk")
       .methods("POST"_method)
-      ([&dm, &uploadSessions](const crow::request& request, UploadSessionKey uploadSessionKey){
-         
+      ([&dm, &uploadSessions, &sessionObjects](const crow::request& request, UploadSessionKey uploadSessionKey){
+
 
         std::vector<char> data(request.body.begin(), request.body.end());
 
@@ -117,6 +156,12 @@ int main(){
 
         if (it == uploadSessions.end()){
             return crow::response(400);
+        };
+
+        auto oidIt = sessionObjects.find(uploadSessionKey);
+
+        if (oidIt != sessionObjects.end()){
+            std::cout << "Session: " << uploadSessionKey << " -> OID: " << oidIt->second << std::endl;
         };
 
         auto res = dm.PutObject(data, it->second);

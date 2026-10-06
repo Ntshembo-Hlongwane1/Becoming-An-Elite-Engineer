@@ -31,11 +31,11 @@ PlacementManager::~PlacementManager(){
     return isoNum;
 };
 
-std::string PlacementManager::GetObjectPath(ObjectId oid) noexcept {
+[[nodiscard]] std::string PlacementManager::GetObjectPath(ObjectId oid) noexcept {
     return "";
 };
 
-std::uint64_t PlacementManager::GetTimeStampMs_(const boost::uuids::uuid& uuid) noexcept{
+[[nodiscard]] std::uint64_t PlacementManager::GetTimeStampMs_(const boost::uuids::uuid& uuid) noexcept{
     std::uint64_t timestamp = 0;
 
     for (size_t i = 0; i < 6; ++i){
@@ -47,7 +47,7 @@ std::uint64_t PlacementManager::GetTimeStampMs_(const boost::uuids::uuid& uuid) 
 
 };
 
-std::string PlacementManager::MsTimeStampToUTC_(std::uint64_t epoch_ms) {
+[[nodiscard]] std::string PlacementManager::MsTimeStampToUTC_(std::uint64_t epoch_ms) {
     using namespace std::chrono;
 
     // Build a time_point from a duration of milliseconds
@@ -71,7 +71,7 @@ std::string PlacementManager::MsTimeStampToUTC_(std::uint64_t epoch_ms) {
     return os.str();
 }
 
-std::optional<WeekdayInfo> PlacementManager::WeekdayFromUTC_(const std::string& utc) {
+[[nodiscard]] std::optional<WeekdayInfo> PlacementManager::WeekdayFromUTC_(const std::string& utc) {
      using namespace std::chrono;
 
     std::istringstream is{utc};

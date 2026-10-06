@@ -4,7 +4,14 @@
 #include <iomanip>
 #include <sstream>
 #include <memory>
+#include <array>
+#include <span>
+#include <string_view>
+#include <stdexcept>
+#include <algorithm>
 #include <openssl/evp.h>
+#include <boost/uuid/uuid.hpp>
+#include "internal/kernal/core/include/types/core.hpp"
 
 namespace utility::crypto {
 
@@ -44,7 +51,7 @@ namespace utility::crypto {
     }
 
     // Constant-time comparison to avoid timing attacks
-    bool secure_compare(const std::string& a, const std::string& b) {
+    inline bool secure_compare(const std::string& a, const std::string& b) {
         if (a.size() != b.size()) return false;
         unsigned char diff = 0;
         for (size_t i = 0; i < a.size(); ++i) {
@@ -54,7 +61,49 @@ namespace utility::crypto {
     }
 
     // Validate that `input` matches a known expected hash
-    bool validate_sha256(const std::string& input, const std::string& expected_hash) {
+    inline bool validate_sha256(const std::string& input, const std::string& expected_hash) {
         return secure_compare(sha256(input), expected_hash);
     }
+
+    using Digest256 = std::array<unsigned char, 32>;
+
+    // HMAC-SHA-256 (FIPS 198-1 / FIPS 180-4) via the OpenSSL 3 provider API
+    inline Digest256 hmac_sha256(std::span<const unsigned char> key, std::span<const unsigned char> msg) {
+        Digest256 out{};
+        size_t length = 0;
+
+        if (EVP_Q_mac(nullptr, "HMAC", nullptr, "SHA256", nullptr,
+                      key.data(), key.size(), msg.data(), msg.size(),
+                      out.data(), out.size(), &length) == nullptr || length != out.size()) {
+            throw std::runtime_error("Failed to compute HMAC-SHA256.");
+        }
+
+        return out;
+    }
+
+    // Deterministic ObjectId from an upload session key:
+    // hex( HMAC-SHA-256(serverKey, "objstore/objectid/v1" || 16 raw uuid bytes)[0..16] )
+    // Same session + same serverKey => same ObjectId. 128 bits, 32 lowercase hex chars.
+    inline ObjectId make_object_id(std::span<const unsigned char> serverKey, const boost::uuids::uuid& sessionKey) {
+        static constexpr std::string_view kTag = "objstore/objectid/v1";
+
+        // Tag is fixed-length and the uuid is always 16 bytes, so the encoding is unambiguous
+        std::array<unsigned char, kTag.size() + 16> msg{};
+        std::copy(kTag.begin(), kTag.end(), msg.begin());
+        std::copy(sessionKey.begin(), sessionKey.end(), msg.begin() + kTag.size());
+
+        const Digest256 digest = hmac_sha256(serverKey, msg);
+
+        // Truncate to 128 bits (permitted by NIST SP 800-107) and hex encode
+        static constexpr char hex[] = "0123456789abcdef";
+        ObjectId id;
+        id.reserve(32);
+        for (size_t i = 0; i < 16; ++i) {
+            id.push_back(hex[digest[i] >> 4]);
+            id.push_back(hex[digest[i] & 0x0f]);
+        }
+
+        return id;
+    }
+
 }
