@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include "include/file.hpp"
+#include <string>
 
 int main(){
 
@@ -7,8 +9,17 @@ int main(){
 
     std::vector<char> buffer(4096, 'x'); 
 
+    std::string path = "path.txt";
+    FileManager fm = FileManager{ path };
+
+    // Sequential Write
     for (int i = 0; i < 16384; ++i){
-        // perform FILE I/O
+        fm.Write(buffer);
     }
+    std::cout << "\n";
+    // Random Write
+    for (int i = 0; i < 16384; ++i){
+        fm.WriteAt(buffer, i * 5);
+    };
     return 0;
 }

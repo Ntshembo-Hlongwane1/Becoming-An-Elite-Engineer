@@ -1,0 +1,4 @@
+build/
+build-*/
+am_test_*/
+*.bin
